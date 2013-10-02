@@ -3,13 +3,21 @@ import Image, ImageFile
 # Read Andor Technology Multi-Channel files with PIL.
 # Based on Marcel Leutenegger's MATLAB script.
 
+_MAGIC = 'Andor Technology Multi-Channel File\n'
+
+
+# --------------------------------------------------------------------
+# SIF reader
+
+def _accept(prefix):
+    return prefix[:36] == _MAGIC
+
 class SifImageFile(ImageFile.ImageFile):
     format = "SIF"
     format_description = "Andor Technology Multi-Channel File"
 
     def _open(self):
-        magic = self.fp.read(36)
-        if magic != 'Andor Technology Multi-Channel File\n':
+        if self.fp.read(36) != _MAGIC:
             raise SyntaxError('not a SIF file')
 
         for i in range(2):
@@ -48,5 +56,9 @@ class SifImageFile(ImageFile.ImageFile):
         for frame in range(num_frames):
             self.tile.append(('raw', (0,0) + self.size , offset + frame * 4 * width * height, ('F;32F', 0, 1)))
 
-Image.register_open("SIF", SifImageFile)
+
+# --------------------------------------------------------------------
+# Registry
+
+Image.register_open("SIF", SifImageFile, _accept)
 Image.register_extension("SIF", ".sif")
