@@ -5,12 +5,8 @@ import Image, ImageFile
 
 _MAGIC = 'Andor Technology Multi-Channel File\n'
 
-
 # --------------------------------------------------------------------
 # SIF reader
-
-def _accept(prefix):
-    return prefix[:36] == _MAGIC
 
 class SifImageFile(ImageFile.ImageFile):
     format = "SIF"
@@ -60,5 +56,5 @@ class SifImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Registry
 
-Image.register_open("SIF", SifImageFile, _accept)
+Image.register_open("SIF", SifImageFile)
 Image.register_extension("SIF", ".sif")
