@@ -1,4 +1,4 @@
-import Image, ImageFile
+from PIL import Image, ImageFile
 
 # Read Andor Technology Multi-Channel files with PIL.
 # Based on Marcel Leutenegger's MATLAB script.
@@ -8,12 +8,22 @@ _MAGIC = 'Andor Technology Multi-Channel File\n'
 # --------------------------------------------------------------------
 # SIF reader
 
-def _read_var_len_str(fp):
-    '''Read a string of variable length.  This is encoded by the textual
-    representation of the string length, followed by a newline, followed
-    by the string itself.'''
-    l = int(fp.readline())
-    return fp.read(l)
+def _read_string(fp, length = None):
+    '''Read a string of the given length. If no length is provided, the
+    length is read from the file.'''
+    if length is None:
+        length = int(fp.readline())
+    return fp.read(length)
+
+def _read_until_space(fp):
+    '''Read a space-delimited word.'''
+    word = ''
+    while True:
+        c = fp.read(1)
+        if c == ' ':
+            break
+        word += c
+    return word
 
 class SifImageFile(ImageFile.ImageFile):
     format = "SIF"
@@ -23,8 +33,28 @@ class SifImageFile(ImageFile.ImageFile):
         if self.fp.read(36) != _MAGIC:
             raise SyntaxError('not a SIF file')
 
-        for i in range(2):
-            self.fp.readline()
+        # What's this?
+        self.fp.readline()
+
+        # What's this?
+        _read_until_space(self.fp)
+        _read_until_space(self.fp)
+        _read_until_space(self.fp)
+        _read_until_space(self.fp)
+        _read_until_space(self.fp)
+
+        self.info['DetectorTemperature'] = _read_until_space(self.fp)
+
+        # What is this?
+        _read_string(self.fp, 10)
+
+        # What is this?
+        _read_until_space(self.fp)
+
+        self.info['ExposureTime'] = _read_until_space(self.fp)
+
+        # What is this?
+        self.fp.readline()
 
         self.info['Camera'] = self.fp.readline() #var
         self.info['DetectorDimensions'] = self.fp.readline()
@@ -41,7 +71,7 @@ class SifImageFile(ImageFile.ImageFile):
         self.info['FrameAxis'] = self.fp.readline()
         self.info['XAxis'] = self.fp.readline() #var
         self.info['ImageAxis'] = self.fp.readline() #var
-	# var that follows is also a data type, probably YAxis
+        # var that follows is also a data type, probably YAxis
 
         foo = self.fp.readline()
         img_area = foo.strip().split()
