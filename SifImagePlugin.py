@@ -1,4 +1,4 @@
-import Image, ImageFile
+from PIL import Image, ImageFile
 
 # Read Andor Technology Multi-Channel files with PIL.
 # Based on Marcel Leutenegger's MATLAB script.
