@@ -58,15 +58,15 @@ class SifImageFile(ImageFile.ImageFile):
         _read_until_space(self.fp) # 0
 
         self.info['ExposureTime'] = _read_float(self.fp)
-	self.info['CycleTime'] = float(_read_until_space(self.fp))
-	self.info['AccumulatedCycleTime'] = float(_read_until_space(self.fp))
-	self.info['AccumulatedCycles'] = int(_read_until_space(self.fp))
+	self.info['CycleTime'] = _read_float(self.fp)
+	self.info['AccumulatedCycleTime'] = _read_float(self.fp)
+	self.info['AccumulatedCycles'] = _read_int(self.fp)
 
 	self.fp.read(1) # NULL
 	self.fp.read(1) # space
 
-	self.info['StackCycleTime'] = float(_read_until_space(self.fp))
-	self.info['PixelReadoutTime'] = float(_read_until_space(self.fp))
+	self.info['StackCycleTime'] = _read_float(self.fp)
+	self.info['PixelReadoutTime'] = _read_float(self.fp)
 
         # What is this?
 	_read_until_space(self.fp) # 0
@@ -86,7 +86,7 @@ class SifImageFile(ImageFile.ImageFile):
 	self.fp.read(1) # NULL
 	self.fp.read(1) # space
 
-	# What are  these?
+	# What are  these? Related to software/firmware versions?
 	_read_until_space(self.fp) # 1 or 512
 	_read_until_space(self.fp) # 0
 	_read_until_space(self.fp) # 4
