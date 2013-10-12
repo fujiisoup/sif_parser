@@ -205,10 +205,10 @@ class SifImageFile(ImageFile.ImageFile):
 
         _read_until_space(self.fp) # 65541
 
-        print _read_until_space(self.fp) # x0? left? -> x0
-        print _read_until_space(self.fp) # x1? bottom? -> y1
-        print _read_until_space(self.fp) # y1? right? -> x1
-        print _read_until_space(self.fp) # y0? top? -> y0
+        _read_until_space(self.fp) # x0? left? -> x0
+        _read_until_space(self.fp) # x1? bottom? -> y1
+        _read_until_space(self.fp) # y1? right? -> x1
+        _read_until_space(self.fp) # y0? top? -> y0
 
         self.info['NumberOfFrames'] = 1 - _read_int(self.fp) + _read_int(self.fp);
 
