@@ -20,6 +20,8 @@ def _read_until_space(fp):
     word = ''
     while True:
         c = fp.read(1)
+        if isinstance(c, bytes):
+            c = c.decode('utf-8')
         if c == ' ' or c == '\n':
             break
         word += c
@@ -36,7 +38,10 @@ class SifImageFile(ImageFile.ImageFile):
     format_description = "Andor Technology Multi-Channel File"
 
     def _open(self):
-        if self.fp.read(36) != _MAGIC:
+        first_line = self.fp.read(36)
+        if isinstance(first_line, bytes):
+            first_line = first_line.decode('utf-8')
+        if first_line != _MAGIC:
             raise SyntaxError('not a SIF file')
 
         # What's this?
@@ -198,7 +203,7 @@ class SifImageFile(ImageFile.ImageFile):
 
         self.fp.readline() # 13 newline
         self.fp.readline() # 13 newline
-        
+
         self.info['FrameAxis'] = _read_string(self.fp)
         self.info['DataType'] = _read_string(self.fp)
         self.info['ImageAxis'] = _read_string(self.fp)
@@ -218,13 +223,13 @@ class SifImageFile(ImageFile.ImageFile):
 
         frame_area = self.fp.readline().strip().split()
         [x0,x1,y1,y0,ybin,xbin] = map(int,frame_area[:6]) # is order of x and y correct?
-        width = (1 + x1 - x0) / xbin
-        height = (1 + y1 - y0) / ybin
+        width = int((1 + x1 - x0) / xbin)
+        height = int((1 + y1 - y0) / ybin)
         for frame in range(self.info['NumberOfFrames']):
              self.info['Frame_{:d}_Comment'] = _read_string(self.fp)
 
         self.mode = 'F'
-        self.size = (width, height)
+        self.size = (int(width), int(height))
 
         self.tile = []
         offset = self.fp.tell() + 2
