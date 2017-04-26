@@ -249,11 +249,14 @@ class SifImageFile(ImageFile.ImageFile):
 
         self.tile = []
         offset = self.fp.tell() + 2
+        #for frame in range(self.info['NumberOfFrames']):
         for frame in range(self.info['NumberOfFrames']):
             self.tile.append(('raw', (0, 0) + self.size,
                               offset + frame * 4 * width * height,
                               ('F;32F', 0, 1)))
 
+    def seek(self, frame):
+        print(frame)
 # --------------------------------------------------------------------
 # Registry
 
