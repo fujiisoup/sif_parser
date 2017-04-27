@@ -1,1 +1,2 @@
-import SifImagePlugin
+from sif_open import *
+import plugin
