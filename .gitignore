@@ -28,3 +28,6 @@ pip-log.txt
 
 # original orielsif files
 c
+
+# NIFS related imges
+*.SIF
