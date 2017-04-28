@@ -1,6 +1,8 @@
 sif_reader
 ============
 
+![Codeship Status for fujii-team/sif_reader](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)
+
 A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
