@@ -1,5 +1,5 @@
 import numpy as np
-from _sif_open import _open
+from ._sif_open import _open
 
 def np_open(sif_file):
     """

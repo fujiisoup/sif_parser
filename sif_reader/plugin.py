@@ -1,7 +1,7 @@
 import numpy as np
 from collections import OrderedDict
 from PIL import Image, ImageFile
-import _sif_open
+from . import _sif_open
 
 # Read Andor Technology Multi-Channel files with PIL.
 # Based on Marcel Leutenegger's MATLAB script.

@@ -1,27 +1,30 @@
-sif
-====
+sif_reader
+============
 
-A small library to read Andor Technology Multi-Channel files.
+A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
 
-+ `sif.np_open('/path/to/file.sif')`:
-Read 'sif' file and return as a `np.ndarray` and a `OrderedDict`.
++ `sif_reader.np_open('/path/to/file.sif')`:
+Read 'sif' file and return as a `np.ndarray` for image
+and an `OrderedDict` for metadata.
 
-+ `sif.xr_open('/path/to/file.sif')`:
-Read 'sif' file and return as a `xr.DataArray`. For `xr.DataArray`,
++ `sif_reader.xr_open('/path/to/file.sif')`:
+Read 'sif' file and return as a `xr.DataArray`.
+The metadata is stored in `xr.DataArray.attrs`.
+For `xr.DataArray`,
 see [xarray project](http://xarray.pydata.org)
 
 We also provides a plugin for PIL,
 
 ```python
 from PIL import image
-import sif.plugin
+import sif_reader.plugin
 
 I = Image.open('/path/to/file.sif')
 ```
 
-Note that, however, it seems unstable.
+Note that, however, it does not work for multiple-image files.
 
 
 Image mode for PIL data
@@ -40,19 +43,21 @@ or stored in `attrs` attribute of `xr.DataArray` for `xr_open` method.
 In PIL-plugin mode, metadata is stored in the image's `info` dictionary.
 
 
+
 History
 -------
 
-This plugin is originally developed by ***
+This plugin is originally developed by [soemraws](https://github.com/soemraws)
 based on Marcel Leutenegger's MATLAB script.
 
 
 Version compatibility
 -----------------------
 Andor has changed `sif` format many times.
-The current version can be incompatible with some `sif` file.
+The current package might be incompatible with some `sif` file.
 If your `sif` file cannot be read by this script,
-please raise an issue in github, with attaching an example file.
+please raise an issue in github.
+It will be helpful to attach your SIF file that cannot be read by this script.
 Contribution is also very welcome.
 
 

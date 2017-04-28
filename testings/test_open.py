@@ -1,13 +1,13 @@
 import os
 import sys
 THIS_DIR = os.path.dirname(__file__)
-sys.path.append(THIS_DIR + '/../')
+sys.path.append(THIS_DIR + '/../sif_reader/')
 
 import numpy as np
 import os
 import unittest
+import sif_reader
 import _sif_open
-import sif_open
 
 class test(unittest.TestCase):
     def test_multiple_open(self):
@@ -15,7 +15,7 @@ class test(unittest.TestCase):
         for filename in filenames:
             print('reading ' + filename)
             with open(THIS_DIR + '/examples/' + filename, 'rb') as f:
-                data, info = sif_open.np_open(f)
+                data, info = sif_reader.np_open(f)
             self.assertTrue(np.sum(np.isnan(data)) == 0)
 
     def test_open(self):
@@ -28,14 +28,14 @@ class test(unittest.TestCase):
 
     def test_np_open(self):
         with open(THIS_DIR + '/examples/image.sif', 'rb') as f:
-            data, info = sif_open.np_open(f)
+            data, info = sif_reader.np_open(f)
 
         self.assertTrue(list(data.shape) == [1, 512, 512])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
     def test_np_open2(self):
         with open(THIS_DIR + '/examples/image1.SIF', 'rb') as f:
-            data, info = sif_open.np_open(f)
+            data, info = sif_reader.np_open(f)
 
         self.assertTrue(list(data.shape) == [200, 1024, 1])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
@@ -45,7 +45,7 @@ try:
 
     class Test_xr_open(unittest.TestCase):
         def test_xr_open2(self):
-            da = sif_open.xr_open(THIS_DIR + '/examples/image1.SIF')
+            da = sif_reader.xr_open(THIS_DIR + '/examples/image1.SIF')
             self.assertTrue(list(da.shape) == [200, 1024, 1])
             self.assertTrue(np.sum(np.isnan(da)) == 0)
 
