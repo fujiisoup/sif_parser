@@ -37,7 +37,7 @@ try:
         time = np.ndarray(len(data), dtype=np.float)
         for f in range(len(data)):
             time[f] = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
-            info['timestamp_of_{0:d}'.format(f)]
+            del info['timestamp_of_{0:d}'.format(f)]
 
         return xr.DataArray(data, dims=['time', 'width', 'height'],
                             coords={'time': time}, attrs=info)

@@ -183,7 +183,7 @@ def _open(fp):
 
     for f in range(no_images):
         tile.append(("raw", (0, 0) + size,
-                     offset + f * width * height * 4,
+                     offset + f * width * height * no_subimages * 4,
                      ('F;32F', 0, 1)))
 
     return tile, size, no_images, info

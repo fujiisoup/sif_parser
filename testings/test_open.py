@@ -38,8 +38,9 @@ try:
 
     class Test_xr_open(unittest.TestCase):
         def test_xr_open2(self):
-            da = sif_reader.xr_open(THIS_DIR + '/examples/image.SIF')
+            da = sif_reader.xr_open(THIS_DIR + '/examples/image.sif')
             self.assertTrue(np.sum(np.isnan(da)) == 0)
+            self.assertTrue('timestamp_of_0' not in da.attrs.keys())
 
 except ImportError:
     pass
