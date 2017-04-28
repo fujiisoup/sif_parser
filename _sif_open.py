@@ -18,22 +18,22 @@ def _read_string(fp, length = None):
         length = int(_to_string(fp.readline()))
     return fp.read(length)
 
-def _read_until_space(fp):
+def _read_until(fp, terminator=' '):
     '''Read a space-delimited word.'''
     word = ''
     while True:
         c = _to_string(fp.read(1))
-        if c == ' ' or c == '\n':
+        if c == terminator or c == '\n':
             if len(word) > 0:
                 break
         word += c
     return word
 
 def _read_int(fp):
-    return int(_read_until_space(fp))
+    return int(_read_until(fp, ' '))
 
 def _read_float(fp):
-    return float(_read_until_space(fp))
+    return float(_read_until(fp, ' '))
 
 def _open(fp):
     """
@@ -61,12 +61,12 @@ def _open(fp):
     # What's this?
     fp.readline() # 65538 number_of_images?
 
-    info['SifVersion'] = int(_read_until_space(fp)) # 65559
+    info['SifVersion'] = int(_read_until(fp, ' ')) # 65559
 
     # What's this?
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 1
+    _read_until(fp, ' ') # 0
+    _read_until(fp, ' ') # 0
+    _read_until(fp, ' ') # 1
 
     info['ExperimentTime'] = _read_int(fp)
     info['DetectorTemperature'] = _read_float(fp)
@@ -75,7 +75,7 @@ def _open(fp):
     _read_string(fp, 10) # blank
 
     # What is this?
-    _read_until_space(fp) # 0
+    _read_until(fp, ' ') # 0
 
     info['ExposureTime'] = _read_float(fp)
     info['CycleTime'] = _read_float(fp)
@@ -89,71 +89,20 @@ def _open(fp):
     info['PixelReadoutTime'] = _read_float(fp)
 
     # What is this?
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 1
+    _read_until(fp, ' ') # 0
+    _read_until(fp, ' ') # 1
     info['GainDAC'] = _read_float(fp)
 
-    # What is this?
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 1e-8
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
+    # What is the rest of the line?
+    _read_until(fp, '\n')
 
-    # What is this?
-    fp.read(1) # 0x04
-    fp.read(1) # space
-    fp.read(1) # NULL
-    fp.read(1) # space
-
-    # What are  these? Related to software/firmware versions?
-    _read_until_space(fp) # 1 or 512
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 4
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0 or 1
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 500000
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # float
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 1 or 4
-    _read_until_space(fp) # 0 or 8061
-    _read_until_space(fp) # 1
-    _read_until_space(fp) # 1
-    _read_until_space(fp) # -999
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # -1
-    _read_until_space(fp) # 4
-    _read_until_space(fp) # 15
-    _read_until_space(fp) # 30003
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 0
-    _read_until_space(fp) # 1
-
-    try:
-        info['DetectorType'] = _read_string(fp)
-        # What is this?
-        fp.read(3) # space newline space
-    except ValueError:
-        # support DV420
-        info['DetectorType'] = _to_string(fp.readline())
-
+    info['DetectorType'] = _to_string(fp.readline())
     info['DetectorDimensions'] = (_read_int(fp), _read_int(fp))
-
     info['OriginalFilename'] = _read_string(fp)
 
     # What is this?
     fp.read(2) # space newline
-    _read_until_space(fp) # 65538
+    _read_until(fp, ' ') # 65538
 
     # What is this?
     _read_string(fp) # Is this some type of experiment comment?
@@ -175,12 +124,11 @@ def _open(fp):
     elif info['SifVersion'] == 65565:
         for _ in range(15):
             fp.readline()
-        print(fp.readline())
     elif info['SifVersion'] > 65565:
         for _ in range(18):
             fp.readline()
 
-    info['SifCalbVersion'] = int(_read_until_space(fp)) # 65539
+    info['SifCalbVersion'] = int(_read_until(fp, ' ')) # 65539
     # additional skip for this version
     if info['SifCalbVersion'] == 65540:
         fp.readline()
@@ -199,27 +147,28 @@ def _open(fp):
     info['DataType'] = _read_string(fp)
     info['ImageAxis'] = _read_string(fp)
 
-    _read_until_space(fp) # 65541
+    _read_until(fp, ' ') # 65541
 
-    _read_until_space(fp) # x0? left? -> x0
-    _read_until_space(fp) # x1? bottom? -> y1
-    _read_until_space(fp) # y1? right? -> x1
-    _read_until_space(fp) # y0? top? -> y0
+    _read_until(fp, ' ') # x0? left? -> x0
+    _read_until(fp, ' ') # x1? bottom? -> y1
+    _read_until(fp, ' ') # y1? right? -> x1
+    _read_until(fp, ' ') # y0? top? -> y0
 
-    no_images = int(_read_until_space(fp))
-    no_subimages = int(_read_until_space(fp))
-    total_length = int(_read_until_space(fp))
-    image_length = int(_read_until_space(fp))
+    no_images = int(_read_until(fp, ' '))
+    no_subimages = int(_read_until(fp, ' '))
+    total_length = int(_read_until(fp, ' '))
+    image_length = int(_read_until(fp, ' '))
     info['NumberOfFrames'] = no_images
 
-    _read_until_space(fp) # 65538
+    for i in range(no_subimages):
+        # read subimage information
+        _read_until(fp, ' ') # 65538
 
-    frame_area = fp.readline().strip().split()
-    [x0,x1,y1,y0,xbin,ybin] = map(int,frame_area[:6]) # is order of x and y correct?
-    width = int((1 + x1 - x0) / xbin)
-    height = int((1 + y1 - y0) / ybin)
-
-    size = (int(width), int(height))
+        frame_area = fp.readline().strip().split()
+        x0, y1, x1, y0, ybin, xbin = map(int,frame_area[:6])
+        width = int((1 + x1 - x0) / xbin)
+        height = int((1 + y1 - y0) / ybin)
+    size = (int(width), int(height) * no_subimages)
     tile = []
 
     for f in range(no_images):

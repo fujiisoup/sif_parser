@@ -4,11 +4,20 @@ THIS_DIR = os.path.dirname(__file__)
 sys.path.append(THIS_DIR + '/../')
 
 import numpy as np
+import os
 import unittest
 import _sif_open
 import sif_open
 
 class test(unittest.TestCase):
+    def test_multiple_open(self):
+        filenames = os.listdir(THIS_DIR + '/examples/')
+        for filename in filenames:
+            print('reading ' + filename)
+            with open(THIS_DIR + '/examples/' + filename, 'rb') as f:
+                data, info = sif_open.np_open(f)
+            self.assertTrue(np.sum(np.isnan(data)) == 0)
+
     def test_open(self):
         with open(THIS_DIR + '/examples/image.sif', 'rb') as f:
             tile, size, n_frames, info = _sif_open._open(f)
@@ -25,10 +34,10 @@ class test(unittest.TestCase):
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
     def test_np_open2(self):
-        with open(THIS_DIR + '/examples/134063.SIF', 'rb') as f:
+        with open(THIS_DIR + '/examples/image1.SIF', 'rb') as f:
             data, info = sif_open.np_open(f)
 
-        self.assertTrue(list(data.shape) == [2000, 1, 1024])
+        self.assertTrue(list(data.shape) == [200, 1024, 1])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
 try:
@@ -36,18 +45,13 @@ try:
 
     class Test_xr_open(unittest.TestCase):
         def test_xr_open2(self):
-            da = sif_open.xr_open(THIS_DIR + '/examples/134063.SIF')
-
-            self.assertTrue(list(da.shape) == [2000, 1, 1024])
+            da = sif_open.xr_open(THIS_DIR + '/examples/image1.SIF')
+            self.assertTrue(list(da.shape) == [200, 1024, 1])
             self.assertTrue(np.sum(np.isnan(da)) == 0)
-            # The first frame ranges 0 ~ 1000
-            self.assertTrue((da.isel(time=0) < 1000.0).all())
-            self.assertTrue((da.isel(time=0) > 0.0).all())
-            # Known time axis
-            self.assertTrue(np.allclose(da['time'], np.arange(2000) * 0.005))
 
 except ImportError:
     pass
+
 
 if __name__ == '__main__':
      unittest.main()
