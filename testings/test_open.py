@@ -33,20 +33,12 @@ class test(unittest.TestCase):
         self.assertTrue(list(data.shape) == [1, 512, 512])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
-    def test_np_open2(self):
-        with open(THIS_DIR + '/examples/image1.SIF', 'rb') as f:
-            data, info = sif_reader.np_open(f)
-
-        self.assertTrue(list(data.shape) == [200, 1024, 1])
-        self.assertTrue(np.sum(np.isnan(data)) == 0)
-
 try:
     import xarray as xr
 
     class Test_xr_open(unittest.TestCase):
         def test_xr_open2(self):
-            da = sif_reader.xr_open(THIS_DIR + '/examples/image1.SIF')
-            self.assertTrue(list(da.shape) == [200, 1024, 1])
+            da = sif_reader.xr_open(THIS_DIR + '/examples/image.SIF')
             self.assertTrue(np.sum(np.isnan(da)) == 0)
 
 except ImportError:
