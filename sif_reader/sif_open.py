@@ -4,7 +4,6 @@ from ._sif_open import _open
 def np_open(sif_file):
     """
     Open sif_file and return as np.array.
-
     """
     if isinstance(sif_file, str):
         f = open(sif_file, 'rb')
@@ -13,7 +12,7 @@ def np_open(sif_file):
 
     tile, size, no_images, info = _open(f)
     # allocate np.array
-    data = np.ndarray((no_images, *size), dtype=np.float32)
+    data = np.ndarray((no_images, size[0], size[1]), dtype=np.float32)
     for i, tile1 in enumerate(tile):
         f.seek(tile1[2])  # offset
         data[i] = np.fromfile(f, count=size[0]*size[1],
