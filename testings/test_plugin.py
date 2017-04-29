@@ -1,6 +1,7 @@
 import os
 import sys
 THIS_DIR = os.path.dirname(__file__)
+#sys.path.append(THIS_DIR + '/../sif_reader/')
 
 import numpy as np
 import unittest

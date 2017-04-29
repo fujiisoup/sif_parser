@@ -39,8 +39,8 @@ try:
             time[f] = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
             del info['timestamp_of_{0:d}'.format(f)]
 
-        return xr.DataArray(data, dims=['time', 'width', 'height'],
-                            coords={'time': time}, attrs=info)
+        return xr.DataArray(data, dims=['Time', 'width', 'height'],
+                            coords={'Time': time}, attrs=info)
 
 except ImportError:
     pass

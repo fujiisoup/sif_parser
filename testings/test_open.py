@@ -41,6 +41,9 @@ try:
             da = sif_reader.xr_open(THIS_DIR + '/examples/image.sif')
             self.assertTrue(np.sum(np.isnan(da)) == 0)
             self.assertTrue('timestamp_of_0' not in da.attrs.keys())
+            self.assertTrue('Time' in da.coords)
+            self.assertTrue('width' in da.dims)
+            self.assertTrue('height' in da.dims)
 
 except ImportError:
     pass
