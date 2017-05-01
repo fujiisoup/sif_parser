@@ -14,14 +14,15 @@ import _sif_open
 
 class test(unittest.TestCase):
     def test_multiple_open(self):
+        if not os.path.exists(DATA_DIR):
+            return
         filenames = os.listdir(DATA_DIR)
-        if os.path.exists(DATA_DIR):
-            for filename in filenames:
-                if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
-                    print('reading ' + filename)
-                    with open(DATA_DIR + filename, 'rb') as f:
-                        data, info = sif_reader.np_open(f)
-                    self.assertTrue(np.sum(np.isnan(data)) == 0)
+        for filename in filenames:
+            if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
+                print('reading ' + filename)
+                with open(DATA_DIR + filename, 'rb') as f:
+                    data, info = sif_reader.np_open(f)
+                self.assertTrue(np.sum(np.isnan(data)) == 0)
 
     def test_open(self):
         with open(THIS_DIR + '/examples/image.sif', 'rb') as f:
