@@ -1,7 +1,7 @@
 sif_reader
 ============
 
-![Codeship Status for fujii-team/sif_reader](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)
+![https://app.codeship.com/projects/215816](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)
 
 A small package to read Andor Technology Multi-Channel files.
 
@@ -27,7 +27,7 @@ I = Image.open('/path/to/file.sif')
 ```
 
 Note that, however, it does not work for multiple-image files.
-
+Contribution is very welcome!
 
 Image mode for PIL data
 ------------------------
@@ -39,7 +39,7 @@ The image mode is `'F'`, 32-bit floating-point greyscale.
 Metadata
 --------
 
-Most of the known metadata is returned by `np_open` method,
+Most of the known metadata is stored as an OrderedDict for `np_open` method,
 or stored in `attrs` attribute of `xr.DataArray` for `xr_open` method.
 
 In PIL-plugin mode, metadata is stored in the image's `info` dictionary.
@@ -53,13 +53,14 @@ This plugin is originally developed by [soemraws](https://github.com/soemraws)
 based on Marcel Leutenegger's MATLAB script.
 
 
-Version compatibility
------------------------
+Contribution
+-------------
 Andor has changed `sif` format many times.
 The current package might be incompatible with some `sif` file.
 If your `sif` file cannot be read by this script,
 please raise an issue in github.
-It will be helpful to attach your SIF file that cannot be read by this script.
+It would be very helpful to attach
+your SIF file that cannot be read.
 Contribution is also very welcome.
 
 

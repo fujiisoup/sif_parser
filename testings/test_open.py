@@ -15,7 +15,7 @@ import _sif_open
 class test(unittest.TestCase):
     def test_multiple_open(self):
         if not os.path.exists(DATA_DIR):
-            return
+            raise Error(DATA_DIR + ' is not prepared.')
         filenames = os.listdir(DATA_DIR)
         for filename in filenames:
             if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
