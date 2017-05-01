@@ -29,5 +29,5 @@ pip-log.txt
 # original orielsif files
 c
 
-# NIFS related imges
-*.SIF
+# Private data
+sif_reader_testdata
