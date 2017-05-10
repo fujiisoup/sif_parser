@@ -1,7 +1,7 @@
 sif_reader
 ============
 
-![https://app.codeship.com/projects/215816](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)
+[![badge](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)](https://app.codeship.com/projects/215816)
 
 A small package to read Andor Technology Multi-Channel files.
 
@@ -53,14 +53,18 @@ This plugin is originally developed by [soemraws](https://github.com/soemraws)
 based on Marcel Leutenegger's MATLAB script.
 
 
-Contribution
--------------
+Current status
+---------------
 Andor has changed `sif` format many times.
-The current package might be incompatible with some `sif` file.
-If your `sif` file cannot be read by this script,
+Although I have tested this package with as many kinds of `sif` files as I have
+(the test suit is always checking the compatibility, as the badge above shows),
+it might be still incompatible with your particular `sif` file.
+
+If your file cannot be read by this script,
 please raise an issue in github.
-It would be very helpful to attach
-your SIF file that cannot be read.
+If you send me your file, I can add your file into the test suit
+(I have a private repo in order to keep your sif file private).
+
 Contribution is also very welcome.
 
 
