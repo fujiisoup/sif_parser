@@ -4,23 +4,23 @@ from ._sif_open import _open
 def np_open(sif_file):
     """
     Open sif_file and return as np.array.
-    """
-    if isinstance(sif_file, str):
-        f = open(sif_file, 'rb')
-    else: # file instance
+    """    
+    try:
         f = sif_file
-
-    tile, size, no_images, info = _open(f)
+        tile, size, no_images, info = _open(f)
+    except AttributeError:
+        f = open(sif_file,'rb')
+        tile, size, no_images, info = _open(f)
     # allocate np.array
-    data = np.ndarray((no_images, size[0], size[1]), dtype=np.float32)
+    data = np.ndarray((no_images, size[1], size[0]), dtype=np.float32)
     for i, tile1 in enumerate(tile):
         f.seek(tile1[2])  # offset
-        data[i] = np.fromfile(f, count=size[0]*size[1],
-                              dtype='<f').reshape(*size)
-
-    # close file if filename pass
-    if isinstance(sif_file, str):
+        data[i] = np.fromfile(f, count=size[0]*size[1],dtype='<f').reshape(size[1],size[0])
+        
+    try:
         f.close()
+    finally:
+        pass
 
     return data, info
 
