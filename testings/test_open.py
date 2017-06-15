@@ -6,13 +6,14 @@ sys.path.append(THIS_DIR + '/../sif_reader/')
 # data directories that will be tested
 DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
 
+import PIL.Image
 import numpy as np
 import os
 import unittest
 import sif_reader
 import _sif_open
 
-class test(unittest.TestCase):
+class Test(unittest.TestCase):
     def test_multiple_open(self):
         if not os.path.exists(DATA_DIR):
             raise Error(DATA_DIR + ' is not prepared.')
@@ -39,6 +40,33 @@ class test(unittest.TestCase):
         self.assertTrue(list(data.shape) == [1, 512, 512])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
+class TestValidity(unittest.TestCase):
+    """
+    Check the data is correctly loaded by np_open.
+    """
+    def setUp(self):
+        self.filenames = []
+        self.answer_files = []
+        DATA_DIR2 = THIS_DIR + '/examples/'
+        filenames = os.listdir(DATA_DIR2)
+        for filename in filenames:
+            if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
+                self.filenames.append(DATA_DIR2 + filename)
+                self.answer_files.append(DATA_DIR2 + filename[:-4] + '.npy')
+
+    def test_np_open(self):
+        for filename, answer_file in zip(self.filenames, self.answer_files):
+            with open(filename, 'rb') as f:
+                actual, info = sif_reader.np_open(f)
+            expected = np.load(answer_file)
+            self.assertTrue(np.allclose(actual, expected))
+
+    def test_plugin_open(self):
+        for filename, answer_file in zip(self.filenames, self.answer_files):
+            actual = np.asarray(PIL.Image.open(filename))
+            expected = np.load(answer_file)
+            self.assertTrue(np.allclose(actual, expected))
+
 try:
     import xarray as xr
 
@@ -53,7 +81,6 @@ try:
 
 except ImportError:
     pass
-
 
 if __name__ == '__main__':
      unittest.main()
