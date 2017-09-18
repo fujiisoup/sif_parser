@@ -20,7 +20,8 @@ class TestExtract(unittest.TestCase):
         info['Calibration_data'] = [0.1, 0.2, 0.3, 0.4]
 
         actual = utils.extract_calibration(info)
-        expected = np.poly1d(info['Calibration_data'])(np.arange(1024))
+        expected = np.poly1d(np.flipud(info['Calibration_data']))(
+                                    np.arange(1, 1025))
         self.assertTrue(np.allclose(actual, expected))
 
     def test_calibration_multi_frames(self):
@@ -35,7 +36,7 @@ class TestExtract(unittest.TestCase):
         actual = utils.extract_calibration(info)
         for f in range(3):
             key = 'Calibration_data_for_frame_{:d}'.format(f+1)
-            expected = np.poly1d(np.flipud(info[key]))(np.arange(1024))
+            expected = np.poly1d(np.flipud(info[key]))(np.arange(1, 1025))
             self.assertTrue(np.allclose(actual[f], expected))
 
 
