@@ -11,7 +11,8 @@ import numpy as np
 import os
 import unittest
 import sif_reader
-import _sif_open
+import _sif_open, utils
+
 
 class Test(unittest.TestCase):
     def test_multiple_open(self):
@@ -40,6 +41,7 @@ class Test(unittest.TestCase):
         self.assertTrue(list(data.shape) == [1, 512, 512])
         self.assertTrue(np.sum(np.isnan(data)) == 0)
 
+
 class TestValidity(unittest.TestCase):
     """
     Check the data is correctly loaded by np_open.
@@ -67,6 +69,61 @@ class TestValidity(unittest.TestCase):
             expected = np.load(answer_file)
             self.assertTrue(np.allclose(actual, expected))
 
+
+class TestCalibration(unittest.TestCase):
+    """
+    Test to make sure the calibration data is certainly read.
+    """
+    def setUp(self):
+        self.filenames = []
+        self.answer_files = []
+        DATA_DIR2 = THIS_DIR + '/examples_with_calibration/'
+        filenames = os.listdir(DATA_DIR2)
+        for filename in filenames:
+            if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
+                self.filenames.append(DATA_DIR2 + filename)
+                self.answer_files.append(DATA_DIR2 + filename[:-4] + '.asc')
+
+    def test_np_open(self):
+        def read_lines(f):
+            lines = []
+            x = []
+            for i, line in enumerate(f):
+                try:
+                    stripped = line.split()
+                    array = np.array([float(v) for v in stripped])
+                    if i == 0 or array.shape == lines[-1].shape:
+                        lines.append(array)
+                        x.append(array[0])
+                except Exception:
+                    break
+            return np.array(x), np.array(lines)[:, 1:]
+
+        for filename, answer_file in zip(self.filenames, self.answer_files):
+            with open(filename, 'rb') as f:
+                actual, info = sif_reader.np_open(f)
+            with open(answer_file, 'rb') as f:
+                expected_x, expected = read_lines(f)
+                expected = expected.reshape(actual.shape[0],
+                                            actual.shape[2],
+                                            actual.shape[1])
+                expected = np.moveaxis(expected, 1, -1)
+            self.assertTrue(np.allclose(actual, expected))
+
+            actual_x = utils.extract_calibration(info)
+            if actual_x.ndim == 1:
+                self.assertTrue(np.allclose(actual_x, expected_x))
+
+            # test with xarray
+            try:
+                import xarray as xr
+                # make sure it can be opened
+                actual_xr = sif_reader.xr_open(filename)
+
+            except ImportError:
+                pass
+
+
 try:
     import xarray as xr
 
@@ -81,6 +138,7 @@ try:
 
 except ImportError:
     pass
+
 
 if __name__ == '__main__':
      unittest.main()

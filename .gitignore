@@ -26,8 +26,9 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-# original orielsif files
+# original c files
 c
 
 # Private data
 sif_reader_testdata
+testings/unused_examples

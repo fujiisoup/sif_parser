@@ -1,0 +1,62 @@
+Filename:                     nd_lum_image_no_glue.sif
+Date and Time:                Fri Aug 18 04:43:35 2017
+Software Version:             4.30.30013.0
+Temperature (C):              -50
+Model:                        DU888_BV
+Data Type:                    Counts
+Acquisition Mode:             Accumulate
+Trigger Mode:                 Internal
+Exposure Time (secs):         0.1
+Accumulate Cycle Time (secs): 0.11985
+Frequency (Hz):               8.3435
+Number of Accumulations:      10
+Readout Mode:                 Full Resolution Image
+Horizontal Binning:           1
+Vertical Binning:             1
+Horizontally flipped:         true
+Vertically flipped:           false
+Clockwise rotation:           false
+Anti-Clockwise rotation:      false
+Vertical Shift Speed (usecs): 4.33
+Pixel Readout Rate (MHz):     30
+Baseline offset:              0
+Number of prescans:           0
+Baseline Clamp:               ON
+Clock Amplitude:              Normal
+Output Amplifier:             Electron Multiplying
+EM Gain level:                0
+Serial Number:                10386
+Pre-Amplifier Gain:           2
+Count Convert Mode:           Counts
+Spurious Noise Filter Mode:   No Filter
+Photon counted:               false
+Data Averaging Filter Mode:   No Filter
+SR193i:
+Wavelength (nm):              779.633
+Grating Groove Density (l/mm):1200.75
+Grating Blaze:                500NM
+Output Flipper Port:          Direct
+Filter:                       6-Filter 6
+Input Side Slit Width (um):   25
+
+Calibration data for frame 1 : 425.36, 0.0483309, -
+3.41973e-07, -1.1823e-10
+Calibration data for frame 2 : 464.883, 0.0476565, -
+3.89446e-07, -1.17364e-10
+Calibration data for frame 3 : 503.828, 0.0469567, -
+4.36332e-07, -1.1643e-10
+Calibration data for frame 4 : 542.174, 0.0462325, -
+4.82603e-07, -1.1543e-10
+Calibration data for frame 5 : 579.902, 0.0454853, -
+5.28234e-07, -1.14367e-10
+Calibration data for frame 6 : 616.991, 0.044716, -
+5.73198e-07, -1.13242e-10
+Calibration data for frame 7 : 653.424, 0.043926, -
+6.17471e-07, -1.12058e-10
+Calibration data for frame 8 : 689.185, 0.0431164, -
+6.61031e-07, -1.10817e-10
+Calibration data for frame 9 : 724.257, 0.0422884, -
+7.03855e-07, -1.09522e-10
+Calibration data for frame 10 : 758.625, 0.0414431, -
+7.45922e-07, -1.08176e-10
+

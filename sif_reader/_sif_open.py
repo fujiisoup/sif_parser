@@ -1,3 +1,4 @@
+import numpy as np
 from collections import OrderedDict
 
 # Read Andor Technology Multi-Channel files with PIL.
@@ -102,10 +103,11 @@ def _open(fp):
 
     # What is this?
     fp.read(2) # space newline
-    _read_until(fp, ' ') # 65538
 
     # What is this?
-    _read_string(fp) # Is this some type of experiment comment?
+    _read_int(fp) # 65538
+    info['user_text'] = _read_string(fp)
+
     fp.read(1) # newline
     _read_int(fp) # 65538
     fp.read(8) # 0x01 space 0x02 space 0x03 space 0x00 space
@@ -133,7 +135,9 @@ def _open(fp):
     if info['SifCalbVersion'] == 65540:
         fp.readline()
 
-    fp.readline() # 0x01 space NULL space 0x01 space NULL space 0x01 space NULL newline
+    # 4th-order polynomial coefficients
+    info['Calibration_data'] = fp.readline()
+
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
@@ -176,7 +180,12 @@ def _open(fp):
 
     offset = fp.tell()
     try: # remove extra 0 if it exits.
-        if int(fp.readline()) == 0:
+        flag = int(fp.readline())
+        if flag == 0:
+            offset = fp.tell()
+        # remove another extra 1
+        if flag == 1:
+            fp.readline()
             offset = fp.tell()
     except:
         fp.seek(offset)
@@ -186,4 +195,31 @@ def _open(fp):
                      offset + f * width * height * no_subimages * 4,
                      ('F;32F', 0, 1)))
 
+    info = extract_user_text(info)
+
     return tile, size, no_images, info
+
+
+def extract_user_text(info):
+    """
+    Extract known information from info['user_text'].
+    Current known info is
+    + 'Calibration data for frame %d'
+    """
+    user_text = info['user_text']
+    if b'Calibration data for' in user_text[:20]:
+        texts = user_text.split(b'\n')
+        for i in range(info['NumberOfFrames']):
+            key = 'Calibration_data_for_frame_{:d}'.format(i+1)
+            coefs = texts[i][len(key)+2:].strip().split(b',')
+            info[key] = [float(c) for c in coefs]
+        # Calibration data should be None for this case
+        info['Calibration_data'] = None
+    else:
+        coefs = info['Calibration_data'].strip().split()
+        try:
+            info['Calibration_data'] = [float(c) for c in coefs]
+        except ValueError:
+            del info['Calibration_data']
+    del info['user_text']
+    return info

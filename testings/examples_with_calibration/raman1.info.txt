@@ -1,0 +1,37 @@
+Filename:                     raman1.sif
+Date and Time:                Fri Sep  8 22:03:52 2017
+Software Version:             4.30.30013.0
+Temperature (C):              -50
+Model:                        DU888_BV
+Data Type:                    Counts
+Acquisition Mode:             Accumulate
+Trigger Mode:                 Internal
+Exposure Time (secs):         0.1
+Accumulate Cycle Time (secs): 0.11728
+Frequency (Hz):               8.5269
+Number of Accumulations:      500
+Readout Mode:                 Multi-Track (User defined)
+Number of Tracks:             1
+Vertical Shift Speed (usecs): 4.33
+Pixel Readout Rate (MHz):     30
+Baseline offset:              0
+Number of prescans:           0
+Baseline Clamp:               ON
+Clock Amplitude:              Normal
+Output Amplifier:             Electron Multiplying
+EM Gain level:                20
+Serial Number:                10386
+Pre-Amplifier Gain:           1
+Count Convert Mode:           Counts
+Spurious Noise Filter Mode:   No Filter
+Photon counted:               false
+Data Averaging Filter Mode:   No Filter
+SR193i:
+Wavelength (nm):              430
+Grating Groove Density (l/mm):1200.75
+Grating Blaze:                500NM
+Output Flipper Port:          Direct
+Filter:                       1-405 notch
+Input Side Slit Width (um):   200
+
+
