@@ -3,6 +3,9 @@ sif_reader
 
 [![badge](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)](https://app.codeship.com/projects/215816)
 
+Basic usage
+-----------
+
 A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
@@ -28,6 +31,19 @@ I = Image.open('/path/to/file.sif')
 
 Note that, however, it does not work for multiple-image files.
 Contribution is very welcome!
+
+
+Calibration data
+-----------------
+
+The calibration data of your `sif` file is stored in
+`info['Calibration_data']` or `info['Calibration_data_for_frame_1']`
+(if it is included in the file).
+
+If you are using `xarray`, the calibration data will be stored in
+`coord` attribute of the `xr.DataArray`.
+
+
 
 Image mode for PIL data
 ------------------------
