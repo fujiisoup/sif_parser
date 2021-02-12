@@ -136,6 +136,17 @@ try:
             self.assertTrue('width' in da.dims)
             self.assertTrue('height' in da.dims)
 
+    def test_multiple_open(self):
+        if not os.path.exists(DATA_DIR):
+            raise Error(DATA_DIR + ' is not prepared.')
+        filenames = os.listdir(DATA_DIR)
+        for filename in filenames:
+            if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
+                print('reading ' + filename)
+                with open(DATA_DIR + filename, 'rb') as f:
+                    data = sif_reader.xr_open(f)
+
+
 except ImportError:
     pass
 

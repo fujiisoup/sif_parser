@@ -47,9 +47,9 @@ try:
         # calibration data
         x_calibration = extract_calibration(info)
         if x_calibration is not None:
-            if x_calibration.ndim == 2:
+            if x_calibration.ndim == 2 and x_calibration.shape == (data.shape[0], data.shape[2]):
                 coords['calibration'] = (('Time', 'width'), x_calibration)
-            else:
+            elif x_calibration.shape == x_calibration.shape == (data.shape[2], ):
                 coords['calibration'] = (('width'), x_calibration)
 
         new_info = OrderedDict()
