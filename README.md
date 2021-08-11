@@ -25,6 +25,7 @@ see [xarray project](http://xarray.pydata.org)
 
 #### Note
 **The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
+See the issue [#7](https://github.com/fujiisoup/sif_reader/issues/7)
 
 We also provide a plugin for PIL,
 
