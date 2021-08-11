@@ -106,7 +106,7 @@ def _open(fp):
     # Line 7 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     _read_until(fp, ' ') # 65538
     # Line 8 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    _read_string(fp) # big binary header, 2048 bites.
+    info['user_text'] = _read_string(fp)
     fp.read(1) # newline
     # Line 9 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    
     _read_int(fp) # 65538
@@ -150,7 +150,8 @@ def _open(fp):
     #if info['SifCalbVersion'] == 65540:
         info['PixelCalibration'] = [float(jj) for jj in fp.readline().strip().split()]
     else:
-        fp.readline()    
+        info['Calibration_data'] = fp.readline()
+
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
@@ -194,16 +195,23 @@ def _open(fp):
     info['xbin'] = xbin
     info['ybin'] = ybin
 
-    info['timestamp_array'] = [int(fp.readline()) for f in range(no_images)]
+    for f in range(no_images):
+        info['timestamp_of_{0:d}'.format(f)] = int(fp.readline())
 
     offset = fp.tell()
     try: # remove extra 0 if it exits.
-        if int(fp.readline()) == 0:
+        flag = int(fp.readline())
+        if flag == 0:
+            offset = fp.tell()
+        # remove another extra 1
+        if flag == 1:
+            fp.readline()
             offset = fp.tell()
     except:
         fp.seek(offset)
-       
-    if info['SifVersion'] == 65567:
+
+    # Maybe this is not necessary
+    '''if info['SifVersion'] == 65567:
         """
         In version 65567 after timestamp_array there is 1 and array of bigger numbers
         total of number of frames
@@ -213,6 +221,7 @@ def _open(fp):
             fp.readline()
             
         offset = fp.tell()
+    '''
    
     tile = [("raw",(0,0)+size, offset+f*width*height*no_subimages*4,
                      ('F;32F', 0, 1)) for f in range(no_images)]
@@ -221,4 +230,30 @@ def _open(fp):
     info['tile'] = tile
     info['offset'] = offset
     
+    info = extract_user_text(info)
     return tile, size, no_images, info
+
+
+def extract_user_text(info):
+    """
+    Extract known information from info['user_text'].
+    Current known info is
+    + 'Calibration data for frame %d'
+    """
+    user_text = info['user_text']
+    if b'Calibration data for' in user_text[:20]:
+        texts = user_text.split(b'\n')
+        for i in range(info['NumberOfFrames']):
+            key = 'Calibration_data_for_frame_{:d}'.format(i+1)
+            coefs = texts[i][len(key)+2:].strip().split(b',')
+            info[key] = [float(c) for c in coefs]
+        # Calibration data should be None for this case
+        info['Calibration_data'] = None
+    else:
+        coefs = info['Calibration_data'].strip().split()
+        try:
+            info['Calibration_data'] = [float(c) for c in coefs]
+        except ValueError:
+            del info['Calibration_data']
+    del info['user_text']
+    return info
