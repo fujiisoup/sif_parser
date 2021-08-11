@@ -3,8 +3,5 @@ dependencies:
   - python=3.9
   - pytest
   - numpy
-  - scipy
   - xarray
-  - scikit-learn
-  - bs4
-  - html5lib
+  

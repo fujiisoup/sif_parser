@@ -33,5 +33,5 @@ install:
   - pip install --no-deps -e .
 
 script:
-  - python -OO -c "import pyspectra"
+  - python -OO -c "import sif_reader"
   - py.test tests
