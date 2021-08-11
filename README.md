@@ -20,7 +20,13 @@ The metadata is stored in `xr.DataArray.attrs`.
 For `xr.DataArray`,
 see [xarray project](http://xarray.pydata.org)
 
-We also provides a plugin for PIL,
+
+### Use as a plugin for PIL
+
+#### Note
+**The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
+
+We also provide a plugin for PIL,
 
 ```python
 from PIL import image
