@@ -34,4 +34,4 @@ install:
 
 script:
   - python -OO -c "import sif_reader"
-  - py.test tests
+  - py.test testings
