@@ -1,7 +1,7 @@
 sif_reader
 ============
 
-[![badge](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)](https://app.codeship.com/projects/215816)
+[![Build Status](https://travis-ci.com/fujiisoup/sif_reader.svg?branch=master)](https://travis-ci.com/fujiisoup/sif_reader)
 
 Basic usage
 -----------
