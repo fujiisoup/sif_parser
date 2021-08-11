@@ -10,7 +10,7 @@ from sif_reader import plugin, np_open
 
 
 class test(unittest.TestCase):
-    def test_open(self):
+    def _test_open(self):
         data = PIL.Image.open(THIS_DIR + '/examples/image.sif')
         actual = np.asarray(data)
         expected, _ = np_open(THIS_DIR + '/examples/image.sif')

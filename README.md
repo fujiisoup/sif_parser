@@ -1,7 +1,7 @@
 sif_reader
 ============
 
-[![badge](https://app.codeship.com/projects/63db92a0-0e08-0135-6935-4ae783acbc73/status?branch=master)](https://app.codeship.com/projects/215816)
+[![Build Status](https://travis-ci.com/fujiisoup/sif_reader.svg?branch=master)](https://travis-ci.com/fujiisoup/sif_reader)
 
 Basic usage
 -----------
@@ -20,7 +20,14 @@ The metadata is stored in `xr.DataArray.attrs`.
 For `xr.DataArray`,
 see [xarray project](http://xarray.pydata.org)
 
-We also provides a plugin for PIL,
+
+### Use as a plugin for PIL
+
+#### Note
+**The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
+See the issue [#7](https://github.com/fujiisoup/sif_reader/issues/7)
+
+We also provide a plugin for PIL,
 
 ```python
 from PIL import image
