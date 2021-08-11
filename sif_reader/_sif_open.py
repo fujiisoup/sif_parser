@@ -1,4 +1,3 @@
-import numpy as np
 from collections import OrderedDict
 
 # Read Andor Technology Multi-Channel files with PIL.
@@ -16,7 +15,7 @@ def _read_string(fp, length = None):
     '''Read a string of the given length. If no length is provided, the
     length is read from the file.'''
     if length is None:
-        length = int(_to_string(fp.readline()))
+        length = int(_to_string(fp.readline()))        
     return fp.read(length)
 
 def _read_until(fp, terminator=' '):
@@ -56,26 +55,26 @@ def _open(fp):
     """
     info = OrderedDict()
 
+    # Line 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if _to_string(fp.read(36)) != _MAGIC:
         raise SyntaxError('not a SIF file')
+   
+    # Line 2 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    fp.readline() # 65538 number_of_images? Maybe it is oldest version to open?
 
-    # What's this?
-    fp.readline() # 65538 number_of_images?
-
-    info['SifVersion'] = int(_read_until(fp, ' ')) # 65559
-
-    # What's this?
+    # Line 3 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    info['SifVersion'] = int(_read_until(fp, ' ')) # 65559, newest 65567
+    
     _read_until(fp, ' ') # 0
     _read_until(fp, ' ') # 0
     _read_until(fp, ' ') # 1
 
-    info['ExperimentTime'] = _read_int(fp)
+    info['ExperimentTime'] = _read_int(fp) # 1540956289
     info['DetectorTemperature'] = _read_float(fp)
 
-    # What is this?
-    _read_string(fp, 10) # blank
-
-    # What is this?
+    
+    _read_string(fp, 10) # blanks
+    
     _read_until(fp, ' ') # 0
 
     info['ExposureTime'] = _read_float(fp)
@@ -87,30 +86,31 @@ def _open(fp):
     fp.read(1) # space
 
     info['StackCycleTime'] = _read_float(fp)
-    info['PixelReadoutTime'] = _read_float(fp)
+    info['PixelReadoutTime'] = _read_float(fp) # 1.78571e-09 or 1e-06    
 
-    # What is this?
     _read_until(fp, ' ') # 0
     _read_until(fp, ' ') # 1
     info['GainDAC'] = _read_float(fp)
 
     # What is the rest of the line?
     _read_until(fp, '\n')
-
+    
+    # Line 4 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     info['DetectorType'] = _to_string(fp.readline())
+    # Line 5 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     info['DetectorDimensions'] = (_read_int(fp), _read_int(fp))
-    info['OriginalFilename'] = _read_string(fp)
-
-    # What is this?
+    # Lines 5 -> 6    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    info['OriginalFilename'] = _read_string(fp)   
+    
     fp.read(2) # space newline
-
-    # What is this?
-    _read_int(fp) # 65538
+    # Line 7 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    _read_until(fp, ' ') # 65538
+    # Line 8 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     info['user_text'] = _read_string(fp)
-
     fp.read(1) # newline
+    # Line 9 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    
     _read_int(fp) # 65538
-    fp.read(8) # 0x01 space 0x02 space 0x03 space 0x00 space
+    fp.read(8) # spaces and binary
     info['ShutterTime'] = (_read_float(fp), _read_float(fp)) # ends in newline
 
     if (65548 <= info['SifVersion'] &
@@ -121,22 +121,36 @@ def _open(fp):
         for _ in range(5):
             fp.readline()
     elif info['SifVersion'] == 65559:
-        for _ in range(9):
-            fp.readline()
+        for _ in range(8):
+            fp.readline() # Skip to Line 18
+        info['spectrograph'] = _to_string(fp.readline().split()[1])
     elif info['SifVersion'] == 65565:
         for _ in range(15):
             fp.readline()
     elif info['SifVersion'] > 65565:
-        for _ in range(18):
-            fp.readline()
+        # skipping bunch of lines from 20 to 37, modified to read the Spectrograph name
+        for _ in range(8):
+            fp.readline() # Skip to Line 22
+        info['spectrograph'] = _to_string(fp.readline().split()[1])
+        for _ in range(9):
+            fp.readline() # skipping bunch of lines from 20 to 37 
+    
+    if 'spectrograph' not in info.keys():
+        info['spectrograph'] = 'sif version not checked yet'
 
     info['SifCalbVersion'] = int(_read_until(fp, ' ')) # 65539
     # additional skip for this version
     if info['SifCalbVersion'] == 65540:
         fp.readline()
-
-    # 4th-order polynomial coefficients
-    info['Calibration_data'] = fp.readline()
+    
+    # 0x01 space NULL space 0x01 space NULL space 0x01 space NULL newline
+    # Polinomial coeffitients for pixel to wavelenght convertion 
+    # for Mechelle spectrograph    
+    if 'Mechelle' in info['spectrograph']:
+    #if info['SifCalbVersion'] == 65540:
+        info['PixelCalibration'] = [float(jj) for jj in fp.readline().strip().split()]
+    else:
+        info['Calibration_data'] = fp.readline()
 
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
@@ -144,14 +158,14 @@ def _open(fp):
 
     fp.readline() # 422 newline or 433 newline
 
-    fp.readline() # 13 newline
-    fp.readline() # 13 newline
+    fp.readline() # 13 newline or 6.5
+    fp.readline() # 13 newline or 6.5
 
-    info['FrameAxis'] = _read_string(fp)
+    info['FrameAxis'] = _read_string(fp) # Line 26 or 39
     info['DataType'] = _read_string(fp)
-    info['ImageAxis'] = _read_string(fp)
+    info['ImageAxis'] = _read_string(fp)    
 
-    _read_until(fp, ' ') # 65541
+    _read_until(fp, ' ') # 65541 or 65539
 
     _read_until(fp, ' ') # x0? left? -> x0
     _read_until(fp, ' ') # x1? bottom? -> y1
@@ -163,6 +177,9 @@ def _open(fp):
     total_length = int(_read_until(fp, ' '))
     image_length = int(_read_until(fp, ' '))
     info['NumberOfFrames'] = no_images
+    info['NumberOfSubImages'] = no_subimages
+    info['TotalLength'] = total_length
+    info['ImageLength'] = image_length
 
     for i in range(no_subimages):
         # read subimage information
@@ -172,8 +189,11 @@ def _open(fp):
         x0, y1, x1, y0, ybin, xbin = map(int,frame_area[:6])
         width = int((1 + x1 - x0) / xbin)
         height = int((1 + y1 - y0) / ybin)
+        
     size = (int(width), int(height) * no_subimages)
     tile = []
+    info['xbin'] = xbin
+    info['ybin'] = ybin
 
     for f in range(no_images):
         info['timestamp_of_{0:d}'.format(f)] = int(fp.readline())
@@ -190,13 +210,27 @@ def _open(fp):
     except:
         fp.seek(offset)
 
-    for f in range(no_images):
-        tile.append(("raw", (0, 0) + size,
-                     offset + f * width * height * no_subimages * 4,
-                     ('F;32F', 0, 1)))
-
+    # Maybe this is not necessary
+    '''if info['SifVersion'] == 65567:
+        """
+        In version 65567 after timestamp_array there is 1 and array of bigger numbers
+        total of number of frames
+        Maybe offset should be moved further in this case
+        """
+        for i in range(no_images):
+            fp.readline()
+            
+        offset = fp.tell()
+    '''
+   
+    tile = [("raw",(0,0)+size, offset+f*width*height*no_subimages*4,
+                     ('F;32F', 0, 1)) for f in range(no_images)]
+                     
+    info['size'] = size
+    info['tile'] = tile
+    info['offset'] = offset
+    
     info = extract_user_text(info)
-
     return tile, size, no_images, info
 
 
