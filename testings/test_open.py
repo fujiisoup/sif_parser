@@ -5,6 +5,7 @@ sys.path.append(THIS_DIR + '/../sif_reader/')
 
 # data directories that will be tested
 DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
+PUBLIC_DATA_DIR = THIS_DIR + '/public_testdata/'
 
 import PIL.Image
 import numpy as np
@@ -16,16 +17,17 @@ import _sif_open, utils
 
 class Test(unittest.TestCase):
     def test_multiple_open(self):
-        if not os.path.exists(DATA_DIR):
-            return
-            raise ValueError(DATA_DIR + ' is not prepared.')
-        filenames = os.listdir(DATA_DIR)
+        filenames = []
+        for d in [DATA_DIR, PUBLIC_DATA_DIR]:
+            if os.path.exists(d):
+                files = os.listdir(d)
+                filenames += [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
+
         for filename in filenames:
-            if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
-                print('reading ' + filename)
-                with open(DATA_DIR + filename, 'rb') as f:
-                    data, info = sif_reader.np_open(f)
-                self.assertTrue(np.sum(np.isnan(data)) == 0)
+            print('reading ' + filename)
+            with open(filename, 'rb') as f:
+                data, info = sif_reader.np_open(f)
+            self.assertTrue(np.sum(np.isnan(data)) == 0)
 
     def test_open(self):
         with open(THIS_DIR + '/examples/image.sif', 'rb') as f:
@@ -138,15 +140,16 @@ try:
             self.assertTrue('height' in da.dims)
 
         def test_multiple_open(self):
-            if not os.path.exists(DATA_DIR):
-                return
-                raise ValueError(DATA_DIR + ' is not prepared.')
-            filenames = os.listdir(DATA_DIR)
+            filenames = []
+            for d in [DATA_DIR, PUBLIC_DATA_DIR]:
+                if os.path.exists(d):
+                    files = os.listdir(d)
+                    filenames += [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
+
             for filename in filenames:
-                if filename[-4:] == '.sif' or filename[-4:] == '.SIF':
-                    print('reading ' + filename)
-                    with open(DATA_DIR + filename, 'rb') as f:
-                        data = sif_reader.xr_open(f)
+                print('reading ' + filename)
+                with open(filename, 'rb') as f:
+                    data = sif_reader.xr_open(f)
 
 
 except ImportError:
