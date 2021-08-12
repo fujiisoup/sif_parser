@@ -3,28 +3,70 @@ sif_reader
 
 [![Build Status](https://travis-ci.com/fujiisoup/sif_reader.svg?branch=master)](https://travis-ci.com/fujiisoup/sif_reader)
 
-Basic usage
------------
+## Basic usage
 
 A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
 
-+ `sif_reader.np_open('/path/to/file.sif')`:
-Read 'sif' file and return as a `np.ndarray` for image
-and an `OrderedDict` for metadata.
+### `sif_reader.np_open`
 
-+ `sif_reader.xr_open('/path/to/file.sif')`:
+Read '.sif' file and return as a `np.ndarray` for image and an `OrderedDict` for metadata.
+
+```python
+>>> import sif_reader
+>>> data, info = sif_reader.np_open('/path/to/file.sif')
+>>> data
+array([[[887.  , 881.25, 875.65, ..., 866.05, 870.  ],
+        [905.6 , 872.7 , 900.7 , ..., 871.4 , 866.45],
+        ...,
+        [885.6 , 879.4 , 873.5 , ..., 883.6 , 877.  ],
+        [879.4 , 873.  , 880.5 , ..., 881.  , 867.  ]]],
+      dtype=float32)
+>>> info
+OrderedDict([('SifVersion', 65559),
+             ('ExperimentTime', 1254330082),
+             ('DetectorTemperature', -100.0),
+             ...
+            ])
+```
+
+If your calibration data is included in the file, this will be included as
+`info['Calibration_data']` or `info['Calibration_data_for_frame_1']`.
+
+### `sif_reader.xr_open('/path/to/file.sif')`:
+
 Read 'sif' file and return as a `xr.DataArray`.
 The metadata is stored in `xr.DataArray.attrs`.
-For `xr.DataArray`,
-see [xarray project](http://xarray.pydata.org)
+The calibration data and timestamps are stored as coordinates.
 
+`xarray` is a very useful package to handle multi-dimensional arrays with metadata.
+See [xarray project](http://xarray.pydata.org) for the details.
+
+```python
+>>> sif_reader.xr_open('testings/examples/image.sif')
+<xarray.DataArray (Time: 1, height: 512, width: 512)>
+array([[[887.  , 881.25, 875.65, ..., 866.05, 870.  ],
+        [905.6 , 872.7 , 900.7 , ..., 871.4 , 866.45],
+        [922.6 , 883.95, 899.  , ..., 864.6 , 864.8 ],
+        ...,
+        [880.65, 857.95, 883.55, ..., 866.  , 875.55],
+        [885.6 , 879.4 , 873.5 , ..., 883.6 , 877.  ],
+        [879.4 , 873.  , 880.5 , ..., 881.  , 867.  ]]],
+      dtype=float32)
+Coordinates:
+  * Time     (Time) float64 0.0
+Dimensions without coordinates: height, width
+Attributes:
+    SifVersion:            65559
+    ExperimentTime:        1254330082
+    DetectorTemperature:   -100.0
+    ...
+```
 
 ### Use as a plugin for PIL
 
-#### Note
-**The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
+**NOTE!!  The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
 See the issue [#7](https://github.com/fujiisoup/sif_reader/issues/7)
 
 We also provide a plugin for PIL,
@@ -38,47 +80,18 @@ I = Image.open('/path/to/file.sif')
 
 Note that, however, it does not work for multiple-image files.
 Contribution is very welcome!
-
-
-Calibration data
------------------
-
-The calibration data of your `sif` file is stored in
-`info['Calibration_data']` or `info['Calibration_data_for_frame_1']`
-(if it is included in the file).
-
-If you are using `xarray`, the calibration data will be stored in
-`coord` attribute of the `xr.DataArray`.
-
-
-
-Image mode for PIL data
-------------------------
-
 The image mode is `'F'`, 32-bit floating-point greyscale.
 
 
-
-Metadata
---------
-
-Most of the known metadata is stored as an OrderedDict for `np_open` method,
-or stored in `attrs` attribute of `xr.DataArray` for `xr_open` method.
-
-In PIL-plugin mode, metadata is stored in the image's `info` dictionary.
-
-
-
-History
--------
+## History
 
 This plugin is originally developed by [soemraws](https://github.com/soemraws)
 based on Marcel Leutenegger's MATLAB script.
 
 
-Current status
----------------
-Andor has changed `sif` format many times.
+## Current status
+
+Andor has changed `sif` format for many times.
 Although I have tested this package with as many kinds of `sif` files as I have
 (the test suit is always checking the compatibility, as the badge above shows),
 it might be still incompatible with your particular `sif` file.
@@ -91,8 +104,7 @@ If you send me your file, I can add your file into the test suit
 Contribution is also very welcome.
 
 
-License of original MATLAB script
----------------------------------
+## License of original MATLAB script
 
 Copyright (c) 2006, Marcel Leutenegger
 All rights reserved.
