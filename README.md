@@ -64,6 +64,17 @@ Attributes:
     ...
 ```
 
+### `sif_reader.utils.extract_calibration`
+The `Calibration_data` entry of `info` contains coefficients of a cubic
+polynomial used to calculate the wavelengths of an image.
+To facilitate this `sif_reader.utils` contains the `extract_calibration`
+function, which returns the wavelength of each pixel.
+
+```python
+data, info = sif_reader.np_open('path/to/file.sif')
+wavelengths = sif_reader.utils.extract_calibration(info)
+```
+
 ### Use as a plugin for PIL
 
 **NOTE!!  The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
