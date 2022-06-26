@@ -39,5 +39,10 @@ setup(name='sif_reader',
                    'Operating System :: Microsoft :: Windows',
                    'Operating System :: POSIX :: Linux',
                    'Programming Language :: Python :: 3.6',
-                   'Topic :: Scientific/Engineering :: Physics']
+                   'Topic :: Scientific/Engineering :: Physics'],
+      entry_points={
+          'console_scripts': [
+              'sif_reader=sif_reader.__main__:_main'
+              ]
+          }
       )
