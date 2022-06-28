@@ -10,7 +10,7 @@ DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
 
 import PIL.Image
 import unittest
-import utils
+from sif_reader import utils
 
 
 class TestExtract(unittest.TestCase):
