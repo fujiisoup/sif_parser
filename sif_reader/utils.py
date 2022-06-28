@@ -39,7 +39,7 @@ def extract_calibration(info):
         return None
 
 
-def parse(file: str) -> typing.Tuple[np.ndarray, typing.OrderedDict]:
+def parse(file: str) -> typing.Tuple[np.ndarray, typing.Dict]:
     """
     Parse a .sif file.
 
