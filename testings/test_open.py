@@ -13,7 +13,8 @@ import os
 import pytest
 import unittest
 import sif_reader
-import _sif_open, utils
+from sif_reader import utils
+import _sif_open
 
 
 filenames = []
