@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from setuptools import setup
 import re
-import os
-import sys
+from setuptools import setup
+
 
 # load version form _version.py
 VERSIONFILE = "sif_reader/_version.py"
@@ -14,7 +13,7 @@ mo = re.search(VSRE, verstrline, re.M)
 if mo:
     verstr = mo.group(1)
 else:
-    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
+    raise RuntimeError(f"Unable to find version string in {VERSIONFILE}.")
 
 # module
 
@@ -30,9 +29,9 @@ setup(name='sif_reader',
       package_dir={'sif_reader': 'sif_reader'},
       py_modules=['sif_reader.__init__'],
       test_suite='testings',
-      install_requires="""
-        numpy>=1.10
-      """,
+      install_requires=[
+        'numpy>=1.10',
+        'pandas'],
       classifiers=['License :: OSI Approved :: BSD License',
                    'Natural Language :: English',
                    'Operating System :: MacOS :: MacOS X',
@@ -41,8 +40,6 @@ setup(name='sif_reader',
                    'Programming Language :: Python :: 3.6',
                    'Topic :: Scientific/Engineering :: Physics'],
       entry_points={
-          'console_scripts': [
-              'sif_reader=sif_reader.__main__:_main'
-              ]
+          'console_scripts': ['sif_reader=sif_reader.__main__:_main']
           }
       )
