@@ -99,12 +99,12 @@ convert .sif files to .csv.
 
 Convert all .sif files in the current directory to .csv.
 ```bash
-andor_sif
+sif_reader
 ```
 
 Convert all .sif files ending in `pl` in the current directly into a single .csv.
 ```bash
-andor_sif --join *pl.sif
+sif_reader --join *pl.sif
 ```
 
 ## Use as a plugin for PIL
