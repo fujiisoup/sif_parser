@@ -31,4 +31,8 @@ c
 
 # Private data
 sif_reader_testdata
+sif_parser_testdata
 testings/unused_examples
+
+# temporary files
+testings/public_testdata/cli/output/*
