@@ -1,42 +1,52 @@
 import os
+import sys
 import argparse
 from glob import glob
 import logging
 
-import numpy as np
 import pandas as pd
 
-from . import parser as sif
+from . import utils
 
 
 def main():
+    """
+    Main function for the CLI.
+    Accepts glob patterns of file paths to parse as .sif files.
+    Converts the matched files to .csv, either individually,
+    or joined into a single file if using the `--join` flag.
+    """
     parser = get_parser()
     args = parser.parse_args()
 
     if args.verbose:
         logging.basicConfig(
-            level = logging.INFO,
-            format = '%(message)s'
+            level=logging.INFO,
+            format='%(message)s'
         )
 
     files = []
     for p in args.pattern:
         files += glob(p)
 
-    logging.info(f'Matched {files}')
+    if len(files) == 0:
+        print('No files matched, aborting.')
+        sys.exit(1)
+
+    logging.info('Matched %s', files)
 
     jdf = []
     for file in files:
-        logging.info(f'Converting {file}')
-        data, info = sif.parse(file)
+        logging.info('Converting %s', file)
+        data, _ = utils.parse(file)
 
         fn, _ = os.path.splitext(os.path.basename(file))
 
         df = pd.Series(
             data[:, 1],
-            index = data[:, 0],
-            dtype = int,
-            name = 'counts'
+            index=data[:, 0],
+            dtype=int,
+            name='counts'
         )
         df.index = df.index.rename('wavelength')
 
@@ -60,25 +70,30 @@ def main():
         df.to_csv(fn, index=False)
 
 
-def get_parser():
-    parser = argparse.ArgumentParser(description = 'Convert .sif file to .csv.')
+def get_parser() -> argparse.ArgumentParser:
+    """
+    Creates the argument parser for the CLI.
+
+    :returns ArgumentParser: Argument parser for the CLI.
+    """
+    parser = argparse.ArgumentParser(description='Convert .sif file to .csv.')
     parser.add_argument(
         'pattern',
-        nargs = '*',
-        default = ['*.sif'],
-        help = 'Glob pattern(s) to match files for conversion.'
+        nargs='*',
+        default=['*.sif'],
+        help='Glob pattern(s) to match files for conversion.'
     )
 
     parser.add_argument(
         '--join',
-        action = 'store_true',
-        help = 'Combine all data into a single file.'
+        action='store_true',
+        help='Combine all data into a single file.'
     )
 
     parser.add_argument(
         '--verbose',
-        action = 'store_true',
-        help = 'Log actions.'
+        action='store_true',
+        help='Log actions.'
     )
 
     return parser
@@ -102,4 +117,3 @@ def get_new_join_fn() -> str:
         fn = _new_fn(i)
 
     return fn
-        
