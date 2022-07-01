@@ -205,24 +205,19 @@ def _open(fp):
             offset = fp.tell()
         # remove another extra 1
         if flag == 1:
-            fp.readline()
-            offset = fp.tell()
+            if info['SifVersion'] == 65567:
+                """
+                In version 65567 after timestamp_array there is 1 and array of bigger numbers
+                total of number of frames
+                Maybe offset should be moved further in this case
+                """
+                for i in range(no_images):
+                    fp.readline()
+                    
+                offset = fp.tell()
     except:
         fp.seek(offset)
 
-    # Maybe this is not necessary
-    '''if info['SifVersion'] == 65567:
-        """
-        In version 65567 after timestamp_array there is 1 and array of bigger numbers
-        total of number of frames
-        Maybe offset should be moved further in this case
-        """
-        for i in range(no_images):
-            fp.readline()
-            
-        offset = fp.tell()
-    '''
-   
     tile = [("raw",(0,0)+size, offset+f*width*height*no_subimages*4,
                      ('F;32F', 0, 1)) for f in range(no_images)]
                      
