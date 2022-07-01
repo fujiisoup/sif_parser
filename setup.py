@@ -7,13 +7,19 @@ from setuptools import setup
 
 # load version form _version.py
 VERSIONFILE = "sif_reader/_version.py"
-verstrline = open(VERSIONFILE, "rt").read()
+with open(VERSIONFILE, 'rt', encoding='utf-8') as f:
+    verstrline = f.read()
+
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(VSRE, verstrline, re.M)
 if mo:
     verstr = mo.group(1)
 else:
     raise RuntimeError(f"Unable to find version string in {VERSIONFILE}.")
+
+# README
+with open('README.md', 'r', encoding='utf-8') as f:
+    long_desc = f.read()
 
 # module
 
@@ -22,6 +28,8 @@ setup(name='sif_reader',
       author="Keisuke Fujii",
       author_email="fujii@me.kyoto-u.ac.jp",
       description=("Python package to read Andor sif file."),
+      long_description=long_desc,
+      long_description_content_type='text/markdown',
       license="BSD 3-clause",
       keywords="imaging, Andor",
       url="http://github.com/fujii-team/sif_reader",
