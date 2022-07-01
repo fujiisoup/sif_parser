@@ -3,6 +3,7 @@ import sys
 import argparse
 from glob import glob
 import logging
+from typing import Iterable
 
 import pandas as pd
 
@@ -19,28 +20,64 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.verbose:
+    paths = []
+    for p in args.pattern:
+        paths += glob(p)
+
+    if len(paths) == 0:
+        print('No files matched, aborting.')
+        sys.exit(1)
+
+    convert_files(
+        paths,
+        output_dir=args.output_dir,
+        join=args.join,
+        verbose=args.verbose
+    )
+
+
+def convert_files(
+    paths: Iterable[str],
+    output_dir = None,
+    join: bool = False,
+    verbose: bool = False
+):
+    """
+    Converts sif files to csv.
+
+    :param paths: Iterable of file paths to convert.
+    :param output_dir: Path of directory ot output converted files to.
+    :param join: Whether to join the output into a single file
+        or place the output of each conversion in it own file.
+        [Default: False]
+    :param verbose: Whether to log info.
+    """
+    if len(paths) == 0:
+        return
+
+    if output_dir is None:
+        output_dir = os.getcwd()
+    
+    else:
+        output_dir = os.path.abspath(output_dir)
+
+    if not os.path.exists(output_dir):
+        raise FileNotFoundError(f'Output directory {output_dir} does not exist.')
+
+    if verbose:
         logging.basicConfig(
             level=logging.INFO,
             format='%(message)s'
         )
 
-    files = []
-    for p in args.pattern:
-        files += glob(p)
-
-    if len(files) == 0:
-        print('No files matched, aborting.')
-        sys.exit(1)
-
-    logging.info('Matched %s', files)
+    logging.info('Matched %s', paths)
 
     jdf = []
-    for file in files:
-        logging.info('Converting %s', file)
-        data, _ = utils.parse(file)
+    for path in paths:
+        logging.info('Converting %s', path)
+        data, _ = utils.parse(path)
 
-        fn, _ = os.path.splitext(os.path.basename(file))
+        fn, _ = os.path.splitext(os.path.basename(path))
 
         df = pd.Series(
             data[:, 1],
@@ -50,7 +87,7 @@ def main():
         )
         df.index = df.index.rename('wavelength')
 
-        if args.join:
+        if join:
             df = df.reset_index()
             df.columns = pd.MultiIndex.from_tuples([
                 (fn, head) for head in df.columns
@@ -58,16 +95,16 @@ def main():
             jdf.append(df)
 
         else:
-            df.to_csv(f'{fn}.csv')
+            df.to_csv(os.path.join(output_dir, f'{fn}.csv'))
 
-    if args.join:
+    if join:
         logging.info('Joining data')
         df = pd.concat(jdf, axis=1).sort_index(
             axis=1, level='sample', sort_remaining=False
         )
 
-        fn = get_new_join_fn()
-        df.to_csv(fn, index=False)
+        fn = get_new_join_fn(output_dir)
+        df.to_csv(os.path.join(output_dir, fn), index=False)
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -85,6 +122,12 @@ def get_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        '--output',
+        dest='output_dir',
+        help='Ouput directory to output converted files to.'
+    )
+
+    parser.add_argument(
         '--join',
         action='store_true',
         help='Combine all data into a single file.'
@@ -99,8 +142,9 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def get_new_join_fn() -> str:
+def get_new_join_fn(directory: str) -> str:
     """
+    :param directory: Directory to check.
     :returns: A new file name used for saving joined data.
     """
     def _new_fn(i: int) -> str:
@@ -112,7 +156,7 @@ def get_new_join_fn() -> str:
 
     i = 0
     fn = _new_fn(i)
-    while os.path.exists(fn):
+    while os.path.exists(os.path.join(directory, fn)):
         i += 1
         fn = _new_fn(i)
 
