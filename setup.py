@@ -6,7 +6,7 @@ from setuptools import setup
 
 
 # load version form _version.py
-VERSIONFILE = "sif_reader/_version.py"
+VERSIONFILE = "sif_parser/_version.py"
 with open(VERSIONFILE, 'rt', encoding='utf-8') as f:
     verstrline = f.read()
 
@@ -23,7 +23,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 # module
 
-setup(name='sif_reader',
+setup(name='sif_parser',
       version=verstr,
       author="Keisuke Fujii",
       author_email="fujii@me.kyoto-u.ac.jp",
@@ -33,9 +33,9 @@ setup(name='sif_reader',
       license="BSD 3-clause",
       keywords="imaging, Andor",
       url="http://github.com/fujii-team/sif_reader",
-      packages=["sif_reader"],
-      package_dir={'sif_reader': 'sif_reader'},
-      py_modules=['sif_reader.__init__'],
+      packages=["sif_parser"],
+      package_dir={'sif_parser': 'sif_parser'},
+      py_modules=['sif_parser.__init__'],
       test_suite='testings',
       install_requires=[
         'numpy>=1.10',
@@ -48,6 +48,6 @@ setup(name='sif_reader',
                    'Programming Language :: Python :: 3.6',
                    'Topic :: Scientific/Engineering :: Physics'],
       entry_points={
-          'console_scripts': ['sif_reader=sif_reader.__main__:_main']
+          'console_scripts': ['sif_parser=sif_parser.__main__:_main']
           }
       )

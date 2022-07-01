@@ -1,7 +1,9 @@
-sif_reader
+sif_parser
 ============
 
 [![Build Status](https://travis-ci.com/fujiisoup/sif_reader.svg?branch=master)](https://travis-ci.com/fujiisoup/sif_reader)
+
+> Install with `pip install sif_parser`
 
 ## Basic usage
 
@@ -9,13 +11,13 @@ A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
 
-### `sif_reader.np_open`
+### `sif_parser.np_open`
 
 Read '.sif' file and return as a `np.ndarray` for image and an `OrderedDict` for metadata.
 
 ```python
->>> import sif_reader
->>> data, info = sif_reader.np_open('/path/to/file.sif')
+>>> import sif_parser
+>>> data, info = sif_parser.np_open('/path/to/file.sif')
 >>> data
 array([[[887.  , 881.25, 875.65, ..., 866.05, 870.  ],
         [905.6 , 872.7 , 900.7 , ..., 871.4 , 866.45],
@@ -34,8 +36,9 @@ OrderedDict([('SifVersion', 65559),
 If your calibration data is included in the file, this will be included as
 `info['Calibration_data']` or `info['Calibration_data_for_frame_1']`.
 
-### `sif_reader.xr_open('/path/to/file.sif')`:
+### `sif_parser.xr_open('/path/to/file.sif')`:
 
+> This method is only included if the `xarray` project is installed.
 Read 'sif' file and return as a `xr.DataArray`.
 The metadata is stored in `xr.DataArray.attrs`.
 The calibration data and timestamps are stored as coordinates.
@@ -44,7 +47,7 @@ The calibration data and timestamps are stored as coordinates.
 See [xarray project](http://xarray.pydata.org) for the details.
 
 ```python
->>> sif_reader.xr_open('testings/examples/image.sif')
+>>> sif_parser.xr_open('testings/examples/image.sif')
 <xarray.DataArray (Time: 1, height: 512, width: 512)>
 array([[[887.  , 881.25, 875.65, ..., 866.05, 870.  ],
         [905.6 , 872.7 , 900.7 , ..., 871.4 , 866.45],
@@ -66,27 +69,27 @@ Attributes:
 
 ## Utils
 
-### `sif_reader.utils.extract_calibration`
+### `sif_parser.utils.extract_calibration`
 The `Calibration_data` entry of `info` contains coefficients of a cubic
 polynomial used to calculate the wavelengths of an image.
-To facilitate this `sif_reader.utils` contains the `extract_calibration`
+To facilitate this `sif_parser.utils` contains the `extract_calibration`
 function, which returns the wavelength of each pixel.
 
 ```python
-data, info = sif_reader.np_open('path/to/file.sif')
-wavelengths = sif_reader.utils.extract_calibration(info)
+data, info = sif_parser.np_open('path/to/file.sif')
+wavelengths = sif_parser.utils.extract_calibration(info)
 ```
 
-### `sif_reader.utils.parse`
+### `sif_parser.utils.parse`
 Used to parse a .sif file into a 2 column numpy array as wavelengths and counts.
 
 ```python
 import pandas as pd
-import sif_reader
+import sif_parser
 
 
 # parse the 'my_pl.sif' file
-(data, info) = sif_reader.utils.parse('my_pl.sif')
+(data, info) = sif_parser.utils.parse('my_pl.sif')
 
 # place data into a pandas Series
 df = pd.Series(data[:, 1], index = data[:, 0])
@@ -94,17 +97,17 @@ df = pd.Series(data[:, 1], index = data[:, 0])
 
 ## CLI
 
-Installs a command line interface (CLI) named `sif_reader` that can be used to
+Installs a command line interface (CLI) named `sif_parser` that can be used to
 convert .sif files to .csv.
 
 Convert all .sif files in the current directory to .csv.
 ```bash
-sif_reader
+sif_parser
 ```
 
 Convert all .sif files ending in `pl` in the current directly into a single .csv.
 ```bash
-sif_reader --join *pl.sif
+sif_parser --join *pl.sif
 ```
 
 ## Use as a plugin for PIL
@@ -116,7 +119,7 @@ We also provide a plugin for PIL,
 
 ```python
 from PIL import image
-import sif_reader.plugin
+import sif_parser.plugin
 
 I = Image.open('/path/to/file.sif')
 ```
