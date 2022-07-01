@@ -8,14 +8,13 @@ import logging
 import numpy as np
 import pandas as pd
 
-from sif_reader import cli
+from sif_parser import cli
 
 
 THIS_DIR = os.path.dirname(__file__)
-sys.path.append(THIS_DIR + '/../sif_reader/')
+sys.path.append(THIS_DIR + '/../sif_parser/')
 
 # data directories that will be tested
-DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
 PUBLIC_DATA_DIR = THIS_DIR + '/public_testdata/'
 
 CLI_DATA_DIR = os.path.join(PUBLIC_DATA_DIR, 'cli')
