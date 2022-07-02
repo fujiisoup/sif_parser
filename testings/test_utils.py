@@ -3,14 +3,11 @@ import numpy as np
 import os
 import sys
 THIS_DIR = os.path.dirname(__file__)
-sys.path.append(THIS_DIR + '/../sif_reader/')
-
-# data directories that will be tested
-DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
+sys.path.append(THIS_DIR + '/../sif_parser/')
 
 import PIL.Image
 import unittest
-from sif_reader import utils
+from sif_parser import utils
 
 
 class TestExtract(unittest.TestCase):

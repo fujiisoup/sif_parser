@@ -1,10 +1,10 @@
 import os
 import sys
 THIS_DIR = os.path.dirname(__file__)
-sys.path.append(THIS_DIR + '/../sif_reader/')
+sys.path.append(THIS_DIR + '/../sif_parser/')
 
 # data directories that will be tested
-DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
+DATA_DIR = THIS_DIR + '/sif_parser_testdata/'
 PUBLIC_DATA_DIR = THIS_DIR + '/public_testdata/'
 
 import PIL.Image
@@ -12,8 +12,8 @@ import numpy as np
 import os
 import pytest
 import unittest
-import sif_reader
-from sif_reader import utils
+import sif_parser
+from sif_parser import utils
 import _sif_open
 
 
@@ -26,7 +26,7 @@ for d in [DATA_DIR, PUBLIC_DATA_DIR]:
 @pytest.mark.parametrize('filename', filenames)
 def test_open(filename):
     with open(filename, 'rb') as f:
-        data, info = sif_reader.np_open(f)
+        data, info = sif_parser.np_open(f)
     assert np.sum(np.isnan(data)) == 0
 
     # open reference data if exists
@@ -77,7 +77,7 @@ class TestCalibration(unittest.TestCase):
 
         for filename, answer_file in zip(self.filenames, self.answer_files):
             with open(filename, 'rb') as f:
-                actual, info = sif_reader.np_open(f)
+                actual, info = sif_parser.np_open(f)
             with open(answer_file, 'rb') as f:
                 expected_x, expected = read_lines(f)
                 expected = expected.reshape(actual.shape[0],
@@ -94,7 +94,7 @@ class TestCalibration(unittest.TestCase):
             try:
                 import xarray as xr
                 # make sure it can be opened
-                actual_xr = sif_reader.xr_open(filename)
+                actual_xr = sif_parser.xr_open(filename)
 
             except ImportError:
                 pass
@@ -105,7 +105,7 @@ try:
 
     class Test_xr_open(unittest.TestCase):
         def test_xr_open2(self):
-            da = sif_reader.xr_open(PUBLIC_DATA_DIR + 'image.sif')
+            da = sif_parser.xr_open(PUBLIC_DATA_DIR + 'image.sif')
             self.assertTrue(np.sum(np.isnan(da)) == 0)
             self.assertTrue('timestamp_of_0' not in da.attrs.keys())
             self.assertTrue('Time' in da.coords)
@@ -122,7 +122,7 @@ try:
             for filename in filenames:
                 print('reading ' + filename)
                 with open(filename, 'rb') as f:
-                    data = sif_reader.xr_open(f)
+                    data = sif_parser.xr_open(f)
 
 
 except ImportError:

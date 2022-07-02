@@ -33,5 +33,7 @@ install:
   - pip install --no-deps -e .
 
 script:
-  - python -OO -c "import sif_reader"
+  - python -OO -c "import sif_parser"
   - py.test testings
+  - chmod +x ./testings/test_cli.sh
+  - ./testings/test_cli.sh
