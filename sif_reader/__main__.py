@@ -1,4 +1,4 @@
-from . import cli
+from ..sif_parser import cli
 
 
 def _main():
