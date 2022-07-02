@@ -8,11 +8,11 @@ sys.path.append(THIS_DIR + '/../sif_parser/')
 
 # data directories that will be tested
 PUBLIC_DATA_DIR = THIS_DIR + '/public_testdata/'
-PRIVATE_DATA_DIR = THIS_DIR + '/sif_reader_testdata/'
+PRIVATE_DATA_DIR = THIS_DIR + '/sif_parser_testdata/'
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sif_reader
+import sif_parser
 
 
 files = [PUBLIC_DATA_DIR + f for f in  os.listdir(PUBLIC_DATA_DIR) if f[-4:].lower() == '.sif']
@@ -20,7 +20,7 @@ files += [PRIVATE_DATA_DIR + f for f in os.listdir(PRIVATE_DATA_DIR) if f[-4:].l
 
 for file in files:
     with open(file, 'rb') as f:
-        da = sif_reader.xr_open(f)
+        da = sif_parser.xr_open(f)
     np.savez(file[:-4] + '.npz', da.values)
     # save image
     da.isel(Time=0).plot()

@@ -6,7 +6,7 @@ from collections import OrderedDict
 _MAGIC = 'Andor Technology Multi-Channel File\n'
 
 # --------------------------------------------------------------------
-# SIF reader
+# SIF parser
 def _to_string(c):
     ''' convert bytes to string. c: string or bytes'''
     return c if not isinstance(c, bytes) else c.decode('utf-8')
