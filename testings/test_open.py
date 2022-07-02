@@ -56,10 +56,16 @@ def test_one_image():
 def test_corrupt_file(filename):
     with pytest.raises(ValueError) as e_info:
         data, info = sif_parser.np_open(filename)
-    
+
     with pytest.warns(UserWarning, match='corrupt.'):
         data, info = sif_parser.np_open(filename, ignore_corrupt=True)
     
+    with pytest.raises(ValueError) as e_info:
+        data = sif_parser.xr_open(filename)
+    
+    with pytest.warns(UserWarning, match='corrupt.'):
+        data = sif_parser.xr_open(filename, ignore_corrupt=True)
+
 
 class TestCalibration(unittest.TestCase):
     """

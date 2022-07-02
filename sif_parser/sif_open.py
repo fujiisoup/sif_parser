@@ -32,7 +32,8 @@ def np_open(sif_file, ignore_corrupt=False):
             if not ignore_corrupt:
                 raise ValueError(
                     'The file might be corrupt. Number of files should be {} '
-                    'according to the header, but only {} is found in the file.'.format(
+                    'according to the header, but only {} is found in the file.'
+                    'Use "ignore_corrupt=True" keyword argument to ignore.'.format(
                         no_images, len(data)
                     )
                 )
@@ -50,9 +51,14 @@ def np_open(sif_file, ignore_corrupt=False):
     return data, info
 
 # --- xarray open ---
-def xr_open(sif_file):
+def xr_open(sif_file, ignore_corrupt=False):
     """
     Read file and set into xr.DataArray.
+    
+    Parameters
+    ----------
+    sif_file: 
+    ignore_corrupt
     """
     try:
         import xarray as xr
@@ -61,7 +67,7 @@ def xr_open(sif_file):
             "xarray needs to be installed to use xr_open."
         )
 
-    data, info = np_open(sif_file)
+    data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt)
     # coordinates
     coords = OrderedDict()
     # extract time stamps
