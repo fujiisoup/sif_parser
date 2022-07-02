@@ -24,7 +24,13 @@ CLI_OUT_DIR = os.path.join(CLI_DATA_DIR, 'output')
 
 def clean_out_dir():
     """Delete output directory and recreate for fresh start."""
-    shutil.rmtree(CLI_OUT_DIR)
+    try:
+        shutil.rmtree(CLI_OUT_DIR)
+
+    except FileNotFoundError:
+        # output directory did not exist
+        pass
+
     os.mkdir(CLI_OUT_DIR)
 
 
