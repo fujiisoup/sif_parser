@@ -86,12 +86,13 @@ def xr_open(sif_file, ignore_corrupt=False):
             coords['calibration'] = (('width'), x_calibration)
 
     new_info = OrderedDict()
+    unused_keys = ['Calibration_data', 'timestamp_of_', 'tile']
     for key in list(info.keys()):
-        if 'Calibration_data' not in key:
+        if all(k not in key for k in unused_keys):
             new_info[key] = info[key]
             # remove time stamps from attrs
-        if 'timestamp_of_' in key:
-            del new_info[key]
+            if type(new_info[key]) == bytes:
+                new_info[key] = new_info[key].decode('utf-8')
     
 
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
