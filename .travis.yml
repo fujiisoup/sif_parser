@@ -34,6 +34,7 @@ install:
 
 script:
   - python -OO -c "import sif_parser"
+  - python -OO -c "import sif_reader"
   - py.test testings
   - chmod +x ./testings/test_cli.sh
   - ./testings/test_cli.sh

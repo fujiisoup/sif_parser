@@ -55,7 +55,7 @@ If your calibration data is included in the file, this will be included as
 
 ### `sif_parser.xr_open('/path/to/file.sif')`:
 
-> This method is only included if the `xarray` project is installed.
+**`xarray` must be installed to use this method.**
 
 Read 'sif' file and return as a `xr.DataArray`.
 The metadata is stored in `xr.DataArray.attrs`.
