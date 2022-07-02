@@ -23,6 +23,12 @@ for d in [DATA_DIR, PUBLIC_DATA_DIR]:
         files = os.listdir(d)
         filenames += [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
 
+
+d = THIS_DIR + '/corrupt_data/'
+files = os.listdir(d)
+corrupt_filenames = [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
+
+
 @pytest.mark.parametrize('filename', filenames)
 def test_open(filename):
     with open(filename, 'rb') as f:
@@ -45,6 +51,15 @@ def test_one_image():
     assert tile[0][1] == (0, 0, 512, 512)
     assert n_frames == 1
 
+
+@pytest.mark.parametrize('filename', corrupt_filenames)
+def test_corrupt_file(filename):
+    with pytest.raises(ValueError) as e_info:
+        data, info = sif_parser.np_open(filename)
+    
+    with pytest.warns(UserWarning, match='corrupt.'):
+        data, info = sif_parser.np_open(filename, ignore_corrupt=True)
+    
 
 class TestCalibration(unittest.TestCase):
     """
