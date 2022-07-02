@@ -1,13 +1,30 @@
 sif_parser
 ============
 
-[![Build Status](https://travis-ci.com/fujiisoup/sif_parser.svg?branch=master)](https://travis-ci.com/fujiisoup/sif_parser)
+[![Build Status](https://app.travis-ci.com/fujiisoup/sif_parser.svg?branch=master)](https://app.travis-ci.com/fujiisoup/sif_parser)
 
-> Install with `pip install sif_parser`
+### A small package to read Andor Technology Multi-Channel files.
+
+
+**This package was renamed from [sif_reader](https://www.github.com/fujiisoup/sif_reader).**
+
+
+## Install
+
+This package can be installed via `pip`
+
+```bash
+pip install sif_parser
+```
+
+or if you have `git` installed in your system, you can also do
+
+```bash
+pip install git+https://www.github.com/fujiisoup/sif_parser
+```
 
 ## Basic usage
 
-A small package to read Andor Technology Multi-Channel files.
 
 It provides the following methods,
 
@@ -39,6 +56,7 @@ If your calibration data is included in the file, this will be included as
 ### `sif_parser.xr_open('/path/to/file.sif')`:
 
 > This method is only included if the `xarray` project is installed.
+
 Read 'sif' file and return as a `xr.DataArray`.
 The metadata is stored in `xr.DataArray.attrs`.
 The calibration data and timestamps are stored as coordinates.
