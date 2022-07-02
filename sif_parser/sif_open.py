@@ -29,6 +29,7 @@ def np_open(sif_file, ignore_corrupt=False):
         try:
             data[i] = np.fromfile(f, count=size[0]*size[1],dtype='<f').reshape(size[1],size[0])
         except ValueError:
+            data = data[:i]
             if not ignore_corrupt:
                 raise ValueError(
                     'The file might be corrupt. Number of files should be {} '
@@ -74,7 +75,6 @@ def xr_open(sif_file, ignore_corrupt=False):
     time = np.ndarray(len(data), dtype=np.float)
     for f in range(len(data)):
         time[f] = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
-        del info['timestamp_of_{0:d}'.format(f)]
     coords['Time'] = (('Time', ), time, {'Unit': 's'})
 
     # calibration data
@@ -86,9 +86,13 @@ def xr_open(sif_file, ignore_corrupt=False):
             coords['calibration'] = (('width'), x_calibration)
 
     new_info = OrderedDict()
-    for key in info:
+    for key in list(info.keys()):
         if 'Calibration_data' not in key:
             new_info[key] = info[key]
+            # remove time stamps from attrs
+        if 'timestamp_of_' in key:
+            del new_info[key]
+    
 
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
