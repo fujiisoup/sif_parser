@@ -132,7 +132,7 @@ try:
             self.assertTrue('Time' in da.coords)
             self.assertTrue('width' in da.dims)
             self.assertTrue('height' in da.dims)
-
+            
         def test_multiple_open(self):
             filenames = []
             for d in [DATA_DIR, PUBLIC_DATA_DIR]:
@@ -140,11 +140,14 @@ try:
                     files = os.listdir(d)
                     filenames += [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
 
+            outputfile = 'test.nc'
             for filename in filenames:
                 print('reading ' + filename)
                 with open(filename, 'rb') as f:
                     data = sif_parser.xr_open(f)
-
+                
+                data.to_netcdf(outputfile)
+                os.remove(outputfile)
 
 except ImportError:
     pass
