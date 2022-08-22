@@ -67,6 +67,17 @@ def test_corrupt_file(filename):
         data = sif_parser.xr_open(filename, ignore_corrupt=True)
 
 
+@pytest.mark.parametrize(('filename', 'raman_wavelength'), [
+    (THIS_DIR + '/raman_data/DD58_785_1_Fe2O3_5x10s.sif', 785),
+    (THIS_DIR + '/raman_data/rubpy3 in ethanolpulsed.sif', 354.67),
+])
+def test_raman(filename, raman_wavelength):
+    data, info = sif_parser.np_open(filename)
+    assert 'RamanExWavelength' in info
+    print(info['RamanExWavelength'])
+    assert np.allclose(info['RamanExWavelength'], raman_wavelength)
+
+
 class TestCalibration(unittest.TestCase):
     """
     Test to make sure the calibration data is certainly read.

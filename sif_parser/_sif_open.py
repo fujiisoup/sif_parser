@@ -1,3 +1,4 @@
+import numpy as np
 from collections import OrderedDict
 
 # Read Andor Technology Multi-Channel files with PIL.
@@ -154,7 +155,11 @@ def _open(fp):
 
     fp.readline() # 0 1 0 0 newline
     fp.readline() # 0 1 0 0 newline
-    fp.readline() # 0 1 0 0 newline
+    raman = fp.readline()
+    try: 
+        info['RamanExWavelength'] = float(raman)
+    except: 
+        info['RamanExWavelength'] = np.nan
 
     fp.readline() # 422 newline or 433 newline
 
