@@ -43,6 +43,19 @@ def test_open(filename):
         assert np.allclose(ref, data)
 
 
+@pytest.mark.parametrize('filename', filenames)
+def test_dask_open(filename):
+    data, info = sif_parser.np_open(filename)
+    data_lazy, info = sif_parser.np_open(filename, lazy='dask')
+    assert np.allclose(data, data_lazy.compute())
+
+@pytest.mark.parametrize('filename', filenames)
+def test_memmap_open(filename):
+    data, info = sif_parser.np_open(filename)
+    data_lazy, info = sif_parser.np_open(filename, lazy='memmap')
+    assert np.allclose(data, data_lazy)
+
+
 def test_one_image():
     with open(PUBLIC_DATA_DIR + 'image.sif', 'rb') as f:
         tile, size, n_frames, info = _sif_open._open(f)

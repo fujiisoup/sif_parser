@@ -5,29 +5,69 @@ from ._sif_open import _open
 from .utils import extract_calibration
 
 
-def np_open(sif_file, ignore_corrupt=False):
+def np_open(sif_file, ignore_corrupt=False, lazy=None):
     """
     Open sif_file and return as np.array.
 
     Parameters
     ----------
     sif_file: 
-    ignore_corrupt
+        path to the file
+    ignore_corrupt: 
+        True if ignore the corrupted frames.
+    lazy: either of None | 'memmap' | 'dask'
+        None: load all the data into the memory
+        'memmap': returns np.memmap pointing on the disk
+        'dask': returns dask.Array that consists of np.memmap
+            This requires dask installed into the computer.
     """
     will_close = False
     try:
         f = sif_file
         tile, size, no_images, info = _open(f)
-        will_close = True
     except AttributeError:
         f = open(sif_file,'rb')
         tile, size, no_images, info = _open(f)
+        will_close = True
+
     # allocate np.array
-    data = np.ndarray((no_images, size[1], size[0]), dtype=np.float32)
+    if lazy == 'dask':
+        try:
+            import dask.array as da
+        except ImportError:
+            raise ImportError(
+                "Install dask to use lazy='dask'"
+            )
+
+    if lazy == 'memmap':
+        # make sure the data is contiguous
+        sizes = [tile[i + 1][2] - tile[i][2] for i in range(len(tile) - 1)]
+        if not np.all(size[0] * size[1] * np.dtype('<f').itemsize == np.array(sizes)):
+            raise ValueError(
+                "The data is not contiguous. Use lazy='dask' instead."
+            )
+
+    if lazy is None:
+        data = np.ndarray((no_images, size[1], size[0]), dtype=np.float32)
+    elif lazy == 'memmap':
+        data = np.memmap(
+            sif_file, '<f', mode='r', offset=tile[0][2], shape=(len(tile), size[1], size[0]), 
+            order='C'
+        )
+    elif lazy == 'dask':
+        data = [None for _ in range(len(tile))]
+
     for i, tile1 in enumerate(tile):
         f.seek(tile1[2])  # offset
         try:
-            data[i] = np.fromfile(f, count=size[0]*size[1],dtype='<f').reshape(size[1],size[0])
+            if lazy is None:
+                data[i] = np.fromfile(f, count=size[0]*size[1],dtype='<f').reshape(size[1],size[0])
+            elif lazy == 'dask':
+                data[i] = da.from_array(np.memmap(
+                    f, dtype='<f', mode='r', offset=tile1[2], 
+                    shape=(size[1], size[0]), order='C'
+                ), chunks=(-1, -1))
+
         except ValueError:
             data = data[:i]
             if not ignore_corrupt:
@@ -48,7 +88,9 @@ def np_open(sif_file, ignore_corrupt=False):
 
     if will_close:
         f.close()
-
+        
+    if lazy == 'dask':
+        data = da.stack(data, axis=0)        
     return data, info
 
 # --- xarray open ---
