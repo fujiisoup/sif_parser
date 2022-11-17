@@ -71,6 +71,15 @@ def test_memmap_open(filename):
     assert np.allclose(data, data_lazy)
 
 
+@pytest.mark.parametrize('filename', filenames)
+def test_xr_memmap_open(filename):
+    data = sif_parser.xr_open(filename)
+    data_lazy = sif_parser.xr_open(filename, lazy='memmap')
+    assert hasattr(data_lazy.data, 'filename')
+    assert not hasattr(data.data, 'filename')
+    assert np.allclose(data, data_lazy)
+
+
 def test_one_image():
     with open(PUBLIC_DATA_DIR + 'image.sif', 'rb') as f:
         tile, size, n_frames, info = _sif_open._open(f)
