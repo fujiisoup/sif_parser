@@ -49,10 +49,25 @@ def test_dask_open(filename):
     data_lazy, info = sif_parser.np_open(filename, lazy='dask')
     assert np.allclose(data, data_lazy.compute())
 
+    data_lazy, info = sif_parser.np_open(filename, lazy='dask')
+    size = sys.getsizeof(data_lazy)
+    size_compute = sys.getsizeof(data_lazy.compute())
+    assert size < size_compute 
+
+
+@pytest.mark.parametrize('filename', filenames)
+def test_xr_dask_open(filename):
+    data = sif_parser.xr_open(filename)
+    data_lazy = sif_parser.xr_open(filename, lazy='dask')
+    assert np.allclose(data, data_lazy.compute())
+
+
 @pytest.mark.parametrize('filename', filenames)
 def test_memmap_open(filename):
     data, info = sif_parser.np_open(filename)
     data_lazy, info = sif_parser.np_open(filename, lazy='memmap')
+    assert hasattr(data_lazy, 'filename')
+    assert not hasattr(data, 'filename')
     assert np.allclose(data, data_lazy)
 
 

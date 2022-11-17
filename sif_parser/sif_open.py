@@ -94,14 +94,20 @@ def np_open(sif_file, ignore_corrupt=False, lazy=None):
     return data, info
 
 # --- xarray open ---
-def xr_open(sif_file, ignore_corrupt=False):
+def xr_open(sif_file, ignore_corrupt=False, lazy=None):
     """
     Read file and set into xr.DataArray.
     
     Parameters
     ----------
     sif_file: 
-    ignore_corrupt
+        path to the file
+    ignore_corrupt: 
+        True if ignore the corrupted frames.
+    lazy: either of None | 'dask'
+        None: load all the data into the memory
+        'dask': returns dask.Array that consists of np.memmap
+            This requires dask installed into the computer.
     """
     try:
         import xarray as xr
@@ -110,7 +116,10 @@ def xr_open(sif_file, ignore_corrupt=False):
             "xarray needs to be installed to use xr_open."
         )
 
-    data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt)
+    if lazy == 'memmap':
+        raise ValueError(
+            "Memmap is not supported for `xr_open`.Use `lazy='dask'` instead.")
+    data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt, lazy=lazy)
     # coordinates
     coords = OrderedDict()
     # extract time stamps
