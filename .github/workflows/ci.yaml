@@ -45,7 +45,7 @@ jobs:
       - name: Setup miniconda
         run: |
           conda env create -n test_env --file $CONDA_ENV_FILE;
-          conda init bash;
+          source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           conda list;
           pip install --no-deps -e .;
