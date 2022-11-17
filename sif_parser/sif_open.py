@@ -104,8 +104,9 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
         path to the file
     ignore_corrupt: 
         True if ignore the corrupted frames.
-    lazy: either of None | 'dask'
+    lazy: either of None | 'memmap' | 'dask'
         None: load all the data into the memory
+        'memmap': returns np.memmap pointing on the disk
         'dask': returns dask.Array that consists of np.memmap
             This requires dask installed into the computer.
     """
@@ -116,10 +117,10 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
             "xarray needs to be installed to use xr_open."
         )
 
-    if lazy == 'memmap':
-        raise ValueError(
-            "Memmap is not supported for `xr_open`.Use `lazy='dask'` instead.")
     data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt, lazy=lazy)
+    # make Variable first to avoid converting to np.array
+    data = xr.core.variable.Variable(['Time', 'height', 'width'], data, fastpath=True)
+    
     # coordinates
     coords = OrderedDict()
     # extract time stamps

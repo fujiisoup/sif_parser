@@ -1,7 +1,7 @@
 sif_parser
 ============
 
-[![Build Status](https://app.travis-ci.com/fujiisoup/sif_parser.svg?branch=master)](https://app.travis-ci.com/fujiisoup/sif_parser)
+![example workflow](https://github.com/fujiisoup/sif_parser/actions/workflows/ci.yaml/badge.svg)
 
 ### A small package to read Andor Technology Multi-Channel files.
 
@@ -53,6 +53,23 @@ OrderedDict([('SifVersion', 65559),
 If your calibration data is included in the file, this will be included as
 `info['Calibration_data']` or `info['Calibration_data_for_frame_1']`.
 
+#### Lazy load
+If your data is very big but you are only interested in a certain part of the file, you can use `lazy` load feature.
+
+```python
+>>> data, info = sif_parser.np_open('path/to/file', lazy='memmap')  # <-- it only reads the header.
+>>> data.shape  # <-- we know the shape
+ (1900, 74, 84)
+>>> da = data[10]  # <-- we can even index the data, BEFORE actually reading the file  
+>>> np.array(da)  # <-- Read only the 10th frame and store it into the memory
+```
+
+We can use either `lazy='memmap'` and `lazy='dask'`.  
+With `lazy='memmap'`, we use [`np.memmap`](https://numpy.org/doc/stable/reference/generated/numpy.  memmap.html), where we create an off-memory data that points the `sif` file.
+With`lazy='dask'`, `dask.Array` will be returned. 
+See [`dask`](https://www.dask.org/) for the details. For this option, `dask` must be  installed in your system.
+
+
 ### `sif_parser.xr_open('/path/to/file.sif')`:
 
 **`xarray` must be installed to use this method.**
@@ -84,6 +101,10 @@ Attributes:
     DetectorTemperature:   -100.0
     ...
 ```
+
+#### Lazy load
+Lazy load is also possible for `xr_open`. To do so, just pass either `lazy='memmap'` or `lazy='dask'`.
+
 
 ## Utils
 
