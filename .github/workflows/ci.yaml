@@ -51,19 +51,23 @@ jobs:
           pip install --no-deps -e .;
       - name: Install sif_parser
         run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           python -m pip install --no-deps -e .
       - name: Version info
         run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           conda info -a
           conda list
       - name: Import sif_parser
         run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           python -c "import sif_parser"
       - name: Run tests
         run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           python -m pytest
       - name: Upload test results
