@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: |
           echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-          echo "CONDA_ENV_FILE=ci/requirements/$py{{ python-version }}.yml" >> $GITHUB_ENV
+          echo "CONDA_ENV_FILE=ci/requirements/py${{ python-version }}.yml" >> $GITHUB_ENV
       - name: Setup micromamba
         uses: mamba-org/provision-with-micromamba@v14
         with:
