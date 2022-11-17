@@ -1,7 +1,8 @@
 name: test_env
 dependencies:
-  - python=3.6
+  - python=3.10
   - pytest
   - numpy
   - xarray
   - pillow
+  - netcdf4
