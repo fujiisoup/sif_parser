@@ -42,24 +42,14 @@ jobs:
         run: |
           echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
           echo "CONDA_ENV_FILE=ci/requirements/py${{ matrix.python-version }}.yml" >> $GITHUB_ENV
-      - name: Setup miniconda
+      - name: Setup miniconda and install sif-parser
         run: |
           conda env create -n test_env --file $CONDA_ENV_FILE;
           source /usr/share/miniconda/etc/profile.d/conda.sh;
           conda activate test_env;
           conda list;
           pip install --no-deps -e .;
-      - name: Install sif_parser
-        run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh;
-          conda activate test_env;
           python -m pip install --no-deps -e .
-      - name: Version info
-        run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh;
-          conda activate test_env;
-          conda info -a
-          conda list
       - name: Import sif_parser
         run: |
           source /usr/share/miniconda/etc/profile.d/conda.sh;
