@@ -44,13 +44,6 @@ jobs:
           echo "CONDA_ENV_FILE=ci/requirements/py${{ matrix.python-version }}.yml" >> $GITHUB_ENV
       - name: Setup miniconda
         run: |
-          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-          bash miniconda.sh -b -p $HOME/miniconda;
-          export PATH="$HOME/miniconda/bin:$PATH";
-          hash -r;
-          conda config --set always_yes yes --set changeps1 no --set show_channel_urls true;
-          conda update -q conda;
-          conda info -a;
           conda env create -n test_env --file $CONDA_ENV_FILE;
           source activate test_env;
           conda list;
