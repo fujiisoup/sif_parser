@@ -64,9 +64,12 @@ jobs:
           conda list
       - name: Import sif_parser
         run: |
+          source activate test_env;
           python -c "import sif_parser"
       - name: Run tests
-        run: python -m pytest
+        run: |
+          source activate test_env;
+          python -m pytest
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
