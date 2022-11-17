@@ -43,6 +43,7 @@ jobs:
           echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
           echo "CONDA_ENV_FILE=ci/requirements/py${{ matrix.python-version }}.yml" >> $GITHUB_ENV
       - name: Setup miniconda
+        run: |
           wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O miniconda.sh;
           bash miniconda.sh -b -p $HOME/miniconda
           export PATH="$HOME/miniconda/bin:$PATH"
