@@ -170,6 +170,17 @@ def spool_open(spool_dir, ignore_missing=False):
     ini_file = glob.glob(spool_dir + "/*.ini" )
     sifx_file = glob.glob(spool_dir + "/*.sifx")
 
+    if len(dat_files_list) < 1:
+        raise ValueError('Not Binary file(s) with extension {} found in the directory provided {} '.format(
+            "*spool.dat", spool_dir))
+    if len(ini_file) < 1:
+        raise ValueError('Not "ini_file" file with extension {} found in the directory provided {} '.format(
+            "*.ini" , spool_dir))
+    if len(sifx_file) < 1:
+        raise ValueError('Not "sifx_file" file with extension {} found in the directory provided {} '.format(
+            "*.sifx", spool_dir))
+
+
 
     with open(ini_file[0], "r") as f:
 
