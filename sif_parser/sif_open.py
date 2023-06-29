@@ -153,7 +153,7 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
 
 def spool_open(spool_dir, ignore_missing=False):
     """
-    Read file and set into xr.DataArray.
+    Read from directory binary files and metadata and return a np.array.
     
     Parameters
     ----------
