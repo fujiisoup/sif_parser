@@ -168,7 +168,8 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         and padding bytes (AOIStride) (See the Andor SDK Manuel for more details).
      - "spooled_file(s)": file or set of files with the extension "*spool.dat" 
         containing the actual image data as binary files.
-
+    
+    Parameters
     ----------
     spool_dir: 
         path to the directory containing the spooling files. 
