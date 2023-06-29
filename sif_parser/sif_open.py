@@ -151,7 +151,7 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
 
-def np_spool_open(spool_dir, ignore_missing=False):
+def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     """
     Read from a directory the binary files and metadata generates via spooling and return a np.array. 
 
@@ -177,6 +177,12 @@ def np_spool_open(spool_dir, ignore_missing=False):
         
     ignore_missing: 
         True if ignore missing binary files.
+    
+    lazy: either of None | 'memmap' | 'dask'
+        None: load all the data into the memory
+        'memmap': returns np.memmap pointing on the disk
+        'dask': returns dask.Array that consists of np.memmap
+            This requires dask installed into the computer.
     """
     dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat" ))
     ini_file = glob.glob(spool_dir + "/*.ini" )
