@@ -151,20 +151,32 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
 
-def spool_open(spool_dir, ignore_missing=False):
+def np_spool_open(spool_dir, ignore_missing=False):
     """
-    Read from directory binary files and metadata and return a np.array.
-    
-    Parameters
+    Read from a directory the binary files and metadata generates via spooling and return a np.array. 
+
+    Spooling acquisition save your data directly o disk when reading from your camera.
+    When spooling acquisition is enabled, a directory is created in your PC
+    and the data is written directly on the hard disk as it is being acquired.
+
+    Spooling acquisition normally generates the following files by default:
+
+     - "sifx_file": 1 file with the extension "*.sifx". This is the header of 
+        the file containing the metadata.
+     - "ini_file": 1 file with the extension "*.ini". This file contain information on the 
+        image format such as number of pixels by row (AOIWidth) number of rows and (AOIHeight) 
+        and padding bytes (AOIStride) (See the Andor SDK Manuel for more details).
+     - "spooled_file(s)": file or set of files with the extension "*spool.dat" 
+        containing the actual image data as binary files.
+
     ----------
     spool_dir: 
         path to the directory containing the spooling files. 
-        Must contain at least the following set of files:
-        - sifx_file: 1 file with the extention "*.sifx". This is the header of the file containing metadata.
-        - ini_file: 1 file with the extension "
-        - spooled_files: file or set of files with the extention "*spool.dat" containing the imgae data as binary files.
+        Must contain at least one "sifx_file", one "ini_file" and 
+        one or more "spooled_file(s)":
+        
     ignore_missing: 
-        True if ignore mising binary files.
+        True if ignore missing binary files.
     """
     dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat" ))
     ini_file = glob.glob(spool_dir + "/*.ini" )
