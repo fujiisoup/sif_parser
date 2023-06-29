@@ -3,6 +3,7 @@ import numpy as np
 from collections import OrderedDict
 from ._sif_open import _open
 from .utils import extract_calibration
+import glob
 
 
 def np_open(sif_file, ignore_corrupt=False, lazy=None):
@@ -149,4 +150,67 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
 
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
+
+def spool_open(spool_dir, ignore_missing=False):
+    """
+    Read file and set into xr.DataArray.
+    
+    Parameters
+    ----------
+    spool_dir: 
+        path to the directory containing the spooling files. 
+        Must contain at least the following set of files:
+        - sifx_file: 1 file with the extention "*.sifx". This is the header of the file containing metadata.
+        - ini_file: 1 file with the extension "
+        - spooled_files: file or set of files with the extention "*spool.dat" containing the imgae data as binary files.
+    ignore_missing: 
+        True if ignore mising binary files.
+    """
+    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat" ))
+    ini_file = glob.glob(spool_dir + "/*.ini" )
+    sifx_file = glob.glob(spool_dir + "/*.sifx")
+
+
+    with open(ini_file[0], "r") as f:
+
+        lines = f.readlines()
+
+    ini_info = OrderedDict([line[:-1].replace(" ", "").split("=") for line in lines[1:4]])
+    
+    # read only metadata (ignoring expected warning on missing data)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        _ , metadata = np_open(sifx_file[0], ignore_corrupt=True)
+
+    # get the actual shape of the image from metadata
+    x, y = metadata["DetectorDimensions"]
+    t = metadata["NumberOfFrames"]
+
+    if len(dat_files_list) != t:
+        if not ignore_missing:
+            raise ValueError('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+        else:
+            warnings.warn('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+            t = len(dat_files_list)
+
+    # shape of ini file
+    x_, y_ =  int( int(ini_info['AOIStride']) / 2 ), int(ini_info['AOIHeight'])
+   # account for the extra padding to trim it later
+    end_padding =  x_ - x
+    
+    # create np array with the given info     
+    data = np.empty( [t, y_, x_] ) 
+
+    for frame in range(t):
+        data[frame, ...] = np.fromfile(dat_files_list[frame], 
+                                       offset=0, 
+                                       dtype=np.uint16, 
+                                       count= y_ * x_).reshape(y_, x_)
+
+
+    return data[:, :, :-end_padding], metadata
 
