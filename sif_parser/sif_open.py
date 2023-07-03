@@ -125,7 +125,7 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
     # coordinates
     coords = OrderedDict()
     # extract time stamps
-    time = np.ndarray(len(data), dtype=np.float)
+    time = np.ndarray(len(data), dtype=float)
     for f in range(len(data)):
         time[f] = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
     coords['Time'] = (('Time', ), time, {'Unit': 's'})
