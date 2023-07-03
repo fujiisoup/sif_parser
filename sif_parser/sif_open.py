@@ -205,7 +205,12 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
 
         lines = f.readlines()
 
-    ini_info = OrderedDict([line[:-1].replace(" ", "").split("=") for line in lines[1:4]])
+    ini_info = OrderedDict([lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6,), 9]])
+
+    if ini_info['PixelEncoding'] == 'Mono16':
+        datatype = np.uint16
+    else:
+        raise ValueError(f"We found different data format than Mono16 with value: {ini_info['PixelEncoding']} ")
     
     # read only metadata (ignoring expected warning on missing data)
     with warnings.catch_warnings():
@@ -238,7 +243,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     for frame in range(t):
         data[frame, ...] = np.fromfile(dat_files_list[frame], 
                                        offset=0, 
-                                       dtype=np.uint16, 
+                                       dtype=datatype, 
                                        count= y_ * x_).reshape(y_, x_)
 
 
