@@ -200,12 +200,20 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
             "*.sifx", spool_dir))
 
 
-
-    with open(ini_file[0], "r") as f:
-
+# Checking for missing or corrupted ini file. File must be lenght >=10 and contain the spected keys, vals in the right order.
+    with open(ini_file[0], "r", encoding="utf-8") as f:
         lines = f.readlines()
+    if len(lines) >= 10:
+        try:
+            keys, vals = zip(*[lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6), 9]])
+            if (keys[0] == 'AOIHeight' and  keys[1] == 'AOIWidth' and keys[2] =='AOIStride' and keys[3] =='PixelEncoding' and keys[4] =='ImageSizeBytes' and keys[5] == 'ImagesPerFile'):
+                ini_info = OrderedDict(zip(keys, vals))  
+        except ValueError:
+            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or missing some keys.")
+        
+    else:
+        raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated")
 
-    ini_info = OrderedDict([lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6,), 9]])
 
     if ini_info['PixelEncoding'] == 'Mono16':
         datatype = np.uint16
