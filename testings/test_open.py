@@ -28,6 +28,14 @@ d = THIS_DIR + '/corrupt_data/'
 files = os.listdir(d)
 corrupt_filenames = [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
 
+d = THIS_DIR + '/spool_data/'
+spool_file_dirs = []
+for e in [d + '/data_corrupted/', d + '/diff_acq_mode/', d + '/diff_encodings/']:
+    if os.path.exists(e):
+        spool_file_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
+
+# spool_file_dirs = [d + dd for dir in  spool_file_dirs]
+
 
 @pytest.mark.parametrize('filename', filenames)
 def test_open(filename):
@@ -199,6 +207,12 @@ try:
 
 except ImportError:
     pass
+
+@pytest.mark.parametrize('spool_dir', spool_file_dirs)
+def test_np_spool_open(spool_dir):
+    with pytest.raises(ValueError) as e_info:
+        data, info = sif_parser.np_spool_open(spool_dir, ignore_missing=False)
+
 
 
 if __name__ == '__main__':
