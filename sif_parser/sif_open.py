@@ -212,29 +212,31 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     else:
         raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated. Check your 'ini' file")
 
+# Checking for incorrect pixel encoding
+    allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
+    if ini_info['PixelEncoding'] not in allowed_encodings:
+        raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
 
-    if ini_info['PixelEncoding'] == 'Mono16':
-        print("pixel endcoding is 'Mono16'")
+    if ini_info['PixelEncoding'] == allowed_encodings[0]:
         datatype = np.uint16
-    if ini_info['PixelEncoding'] == 'Mono12Packed':
-        print("pixel endcoding is 'Mono12Packed'")
-        # datatype = np.uint16
-    if ini_info['PixelEncoding'] == 'Mono32':
-        print("pixel endcoding is 'Mono32'")
+        n_bits = 2
+    elif ini_info['PixelEncoding'] == allowed_encodings[1]:        
         datatype = np.uint32
-    
+        n_bits = 4    
+    elif ini_info['PixelEncoding'] == allowed_encodings[2]:
+        raise ValueError(f"Pixel encoding '{ini_info['PixelEncoding']} is not supported yet.")
+        datatype = np.uint8
+        n_bits = 1
 
-    else:
-        raise ValueError(f"We found different data format than Mono16 with value: {ini_info['PixelEncoding']} ")
     
     # read only metadata (ignoring expected warning on missing data)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        _ , metadata = np_open(sifx_file[0], ignore_corrupt=True)
+        _ , info = np_open(sifx_file[0], ignore_corrupt=True)
 
     # get the actual shape of the image from metadata
-    x, y = metadata["DetectorDimensions"]
-    t = metadata["NumberOfFrames"]
+    x, y = info["DetectorDimensions"]
+    t = info["NumberOfFrames"]
 
     if len(dat_files_list) != t:
         if not ignore_missing:
@@ -248,22 +250,21 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
             t = len(dat_files_list)
 
     # shape of ini file
-    x_, y_ =  int( int(ini_info['AOIStride']) / 2 ), int(ini_info['AOIHeight'])
-   # account for the extra padding to trim it later
-    
-    
+    x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])
+        
     # create np array with the given info     
-    data = np.empty( [t, y_, x_] ) 
+    data = np.empty( [t, y_, x_], datatype ) 
 
     for frame in range(t):
         data[frame, ...] = np.fromfile(dat_files_list[frame], 
                                        offset=0, 
                                        dtype=datatype, 
                                        count= y_ * x_).reshape(y_, x_)
+   # account for the extra padding to trim it later if present
     if x != x_:
         end_padding =  x_ - x
         data = data[:, :, :-end_padding]
 
 
-    return data, metadata
+    return data, info
 
