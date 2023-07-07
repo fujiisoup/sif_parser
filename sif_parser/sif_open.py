@@ -158,7 +158,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     Parameters
     ----------
     spool_dir: 
-        path to the directory containing the spooling files. 
+        directory path containing the spooling files. 
         Must contain at least one "sifx_file", one "ini_file" and 
         one or more "spooled_file(s)":
         
@@ -202,14 +202,13 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
     if ini_info['PixelEncoding'] not in allowed_encodings:
         raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
-
     
     # read only metadata (ignoring expected warning on missing data)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         _ , info = np_open(sifx_file[0], ignore_corrupt=True)
 
-    # get the actual shape of the image from metadata
+    # get the expected shape of the image from metadata
     x, y = info["DetectorDimensions"]
     t = info["NumberOfFrames"]
 
@@ -243,7 +242,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
             offset=0, 
             dtype=datatype,
             count= y_ * x_).reshape(y_, x_)
-        # account for the extra padding to trim it later if present
+        # account for the extra padding to trim if present
         if x != x_:
             end_padding =  x_ - x
             data = data[:, :, :-end_padding]
@@ -263,10 +262,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
             for i in range(y):
                 image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
         
-        data = np.stack(image_mono12, axis = 0).reshape((t, y, x))
-        data = np.flip(data, (1))
-    
-   
+        data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
 
 
     return data, info
