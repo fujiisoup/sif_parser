@@ -212,7 +212,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     else:
         raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated. Check your 'ini' file")
 
-# Checking for incorrect pixel encoding
+# Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
     if ini_info['PixelEncoding'] not in allowed_encodings:
         raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
@@ -224,7 +224,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         datatype = np.uint32
         n_bits = 4    
     elif ini_info['PixelEncoding'] == allowed_encodings[2]:
-        raise ValueError(f"Pixel encoding '{ini_info['PixelEncoding']} is not supported yet.")
+        raise ValueError(f"Pixel encoding '{ini_info['PixelEncoding']} is not supported yet. Allowed pixel encodings are: {allowed_encodings}.")
         datatype = np.uint8
         n_bits = 1
 
