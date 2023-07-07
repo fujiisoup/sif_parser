@@ -15,6 +15,7 @@ import unittest
 import sif_parser
 from sif_parser import utils
 import _sif_open
+import warnings
 
 
 filenames = []
@@ -212,6 +213,14 @@ except ImportError:
 def test_np_spool_open(spool_dir):
     with pytest.raises(ValueError) as e_info:
         data, info = sif_parser.np_spool_open(spool_dir, ignore_missing=False)
+    
+    with pytest.raises(ValueError) as e_info:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            data, info = sif_parser.np_spool_open(spool_dir, ignore_missing=True)
+            if data.shape != info["DetectorDimensions"]:
+                raise ValueError()
+
 
 
 
