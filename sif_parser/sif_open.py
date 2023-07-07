@@ -194,7 +194,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         if (keys[0] == 'AOIHeight' and  keys[1] == 'AOIWidth' and keys[2] =='AOIStride' and keys[3] =='PixelEncoding' and keys[4] =='ImageSizeBytes' and keys[5] == 'ImagesPerFile'):
             ini_info = OrderedDict(zip(keys, vals))  
         else:
-            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted, keys are missing ir in the wrong place. Check your 'ini' file")
+            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted, keys are missing or at the wrong place. Check your 'ini' file")
     else:
         raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated. Check your 'ini' file")
 
@@ -202,17 +202,6 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
     if ini_info['PixelEncoding'] not in allowed_encodings:
         raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
-
-    if ini_info['PixelEncoding'] == allowed_encodings[0]:
-        datatype = np.uint16
-        n_bits = 2
-    elif ini_info['PixelEncoding'] == allowed_encodings[1]:        
-        datatype = np.uint32
-        n_bits = 4    
-    elif ini_info['PixelEncoding'] == allowed_encodings[2]:
-        raise ValueError(f"Pixel encoding '{ini_info['PixelEncoding']} is not supported yet. Allowed pixel encodings are: {allowed_encodings}.")
-        datatype = np.uint8
-        n_bits = 1
 
     
     # read only metadata (ignoring expected warning on missing data)
@@ -234,22 +223,50 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
                         'according to the header, but only {} binary files were found in the directory.'.format(
                             t, len(dat_files_list)))
             t = len(dat_files_list)
+  
 
-    # shape of ini file
-    x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])
+    if ini_info['PixelEncoding'] != allowed_encodings[2]:
+
+        if ini_info['PixelEncoding'] == allowed_encodings[0]:
+            datatype = np.uint16
+            n_bits = 2
+        elif ini_info['PixelEncoding'] == allowed_encodings[1]:        
+            datatype = np.uint32
+            n_bits = 4    
+        # shape of ini file
+        x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])                
+        # create np array with the given info     
+        data = np.empty( [t, y_, x_], datatype ) 
+
+        for frame in range(t):
+            data[frame, ...] = np.fromfile(dat_files_list[frame], 
+            offset=0, 
+            dtype=datatype,
+            count= y_ * x_).reshape(y_, x_)
+        # account for the extra padding to trim it later if present
+        if x != x_:
+            end_padding =  x_ - x
+            data = data[:, :, :-end_padding]
+    else:
+        def read_uint12(data_chunk):
+            data = np.frombuffer(data_chunk, dtype=np.uint8)
+            fst_uint8, mid_uint8, lst_uint8 = np.reshape(data, (data.shape[0] // 3, 3)).astype(np.uint16).T
+            fst_uint12 = (fst_uint8 << 4) + (mid_uint8 >> 4)
+            snd_uint12 = (lst_uint8 << 4) + (np.bitwise_and(15, mid_uint8))
+            return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
+
+        x, x_, y = int(ini_info['AOIWidth']), int(ini_info['AOIStride']), int(ini_info['AOIHeight'])
+        image_mono12 = []
+        for frame in range(t):
+            with open(dat_files_list[frame], 'rb') as f:
+                dat = f.read()
+            for i in range(y):
+                image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
         
-    # create np array with the given info     
-    data = np.empty( [t, y_, x_], datatype ) 
-
-    for frame in range(t):
-        data[frame, ...] = np.fromfile(dat_files_list[frame], 
-                                       offset=0, 
-                                       dtype=datatype, 
-                                       count= y_ * x_).reshape(y_, x_)
-   # account for the extra padding to trim it later if present
-    if x != x_:
-        end_padding =  x_ - x
-        data = data[:, :, :-end_padding]
+        data = np.stack(image_mono12, axis = 0).reshape((t, y, x))
+        data = np.flip(data, (1))
+    
+   
 
 
     return data, info
