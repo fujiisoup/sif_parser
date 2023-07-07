@@ -155,20 +155,6 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     """
     Read from a directory the binary files and metadata generates via spooling and return a np.array. 
 
-    Spooling acquisition save your data directly o disk when reading from your camera.
-    When spooling acquisition is enabled, a directory is created in your PC
-    and the data is written directly on the hard disk as it is being acquired.
-
-    Spooling acquisition normally generates the following files by default:
-
-     - "sifx_file": 1 file with the extension "*.sifx". This is the header of 
-        the file containing the metadata.
-     - "ini_file": 1 file with the extension "*.ini". This file contain information on the 
-        image format such as number of pixels by row (AOIWidth) number of rows and (AOIHeight) 
-        and padding bytes (AOIStride) (See the Andor SDK Manuel for more details).
-     - "spooled_file(s)": file or set of files with the extension "*spool.dat" 
-        containing the actual image data as binary files.
-    
     Parameters
     ----------
     spool_dir: 
@@ -177,13 +163,13 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         one or more "spooled_file(s)":
         
     ignore_missing: 
-        True if ignore missing binary files.
+        True if ignore missing or corrupted *.dat files
     
     lazy: either of None | 'memmap' | 'dask'
         None: load all the data into the memory
         'memmap': returns np.memmap pointing on the disk
         'dask': returns dask.Array that consists of np.memmap
-            This requires dask installed into the computer.
+            This requires dask installed into the computer. *Not yet implemented*
     """
     dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"))
     ini_file = glob.glob(spool_dir + "/*.ini" )
