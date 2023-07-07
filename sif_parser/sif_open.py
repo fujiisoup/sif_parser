@@ -185,7 +185,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         'dask': returns dask.Array that consists of np.memmap
             This requires dask installed into the computer.
     """
-    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat" ))
+    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"))
     ini_file = glob.glob(spool_dir + "/*.ini" )
     sifx_file = glob.glob(spool_dir + "/*.sifx")
 
@@ -204,19 +204,26 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     with open(ini_file[0], "r", encoding="utf-8") as f:
         lines = f.readlines()
     if len(lines) >= 10:
-        try:
-            keys, vals = zip(*[lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6), 9]])
-            if (keys[0] == 'AOIHeight' and  keys[1] == 'AOIWidth' and keys[2] =='AOIStride' and keys[3] =='PixelEncoding' and keys[4] =='ImageSizeBytes' and keys[5] == 'ImagesPerFile'):
-                ini_info = OrderedDict(zip(keys, vals))  
-        except ValueError:
-            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or missing some keys.")
-        
+        keys, vals = zip(*[lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6), 9]])
+        if (keys[0] == 'AOIHeight' and  keys[1] == 'AOIWidth' and keys[2] =='AOIStride' and keys[3] =='PixelEncoding' and keys[4] =='ImageSizeBytes' and keys[5] == 'ImagesPerFile'):
+            ini_info = OrderedDict(zip(keys, vals))  
+        else:
+            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted, keys are missing ir in the wrong place. Check your 'ini' file")
     else:
-        raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated")
+        raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated. Check your 'ini' file")
 
 
     if ini_info['PixelEncoding'] == 'Mono16':
+        print("pixel endcoding is 'Mono16'")
         datatype = np.uint16
+    if ini_info['PixelEncoding'] == 'Mono12Packed':
+        print("pixel endcoding is 'Mono12Packed'")
+        # datatype = np.uint16
+    if ini_info['PixelEncoding'] == 'Mono32':
+        print("pixel endcoding is 'Mono32'")
+        datatype = np.uint32
+    
+
     else:
         raise ValueError(f"We found different data format than Mono16 with value: {ini_info['PixelEncoding']} ")
     
@@ -243,7 +250,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     # shape of ini file
     x_, y_ =  int( int(ini_info['AOIStride']) / 2 ), int(ini_info['AOIHeight'])
    # account for the extra padding to trim it later
-    end_padding =  x_ - x
+    
     
     # create np array with the given info     
     data = np.empty( [t, y_, x_] ) 
@@ -253,7 +260,10 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
                                        offset=0, 
                                        dtype=datatype, 
                                        count= y_ * x_).reshape(y_, x_)
+    if x != x_:
+        end_padding =  x_ - x
+        data = data[:, :, :-end_padding]
 
 
-    return data[:, :, :-end_padding], metadata
+    return data, metadata
 
