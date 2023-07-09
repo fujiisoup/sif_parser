@@ -4,6 +4,7 @@ from collections import OrderedDict
 from ._sif_open import _open
 from .utils import extract_calibration
 import glob
+import configparser
 
 
 def np_open(sif_file, ignore_corrupt=False, lazy=None):
@@ -190,19 +191,19 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     if len(sifx_file) < 1:
         raise ValueError('Not "sifx_file" file with extension {} found in the directory provided {} '.format(
             "*.sifx", spool_dir))
-
-
-# Checking for missing or corrupted ini file. File must be lenght >=10 and contain the spected keys, vals in the right order.
+   
     with open(ini_file[0], "r", encoding="utf-8") as f:
         lines = f.readlines()
-    if len(lines) >= 10:
-        keys, vals = zip(*[lines[i][:-1].replace(" ", "").split("=") for i in [*range(1, 6), 9]])
-        if (keys[0] == 'AOIHeight' and  keys[1] == 'AOIWidth' and keys[2] =='AOIStride' and keys[3] =='PixelEncoding' and keys[4] =='ImageSizeBytes' and keys[5] == 'ImagesPerFile'):
-            ini_info = OrderedDict(zip(keys, vals))  
-        else:
-            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted, keys are missing or at the wrong place. Check your 'ini' file")
-    else:
-        raise ValueError(f"Problem handeling the 'ini' file. The File seems to be incomplete or truncated. Check your 'ini' file")
+    keys, vals = map(list, zip(*[line.strip().split('=', 1) for line in lines if len(line.strip().split('=', 1)) == 2]))
+    keys = [i.strip() for i in keys] # need to strip again
+    vals = [i.strip() for i in vals] # need to strip again
+    ini_info = OrderedDict(zip(keys, vals)) 
+
+# Checking for missing or corrupted ini file. File must contain the spected keys.
+    expected_ini_keys = ['AOIHeight', 'AOIWidth', 'AOIStride', 'PixelEncoding']
+    for key in ini_info:
+        if key not in expected_ini_keys:
+            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their correct values.")
 
 # Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
