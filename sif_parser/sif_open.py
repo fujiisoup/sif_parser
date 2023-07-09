@@ -153,7 +153,8 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
 
 def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     """
-    Read from a directory the binary files and metadata generates via spooling and return a np.array. 
+    Read the binary files and meta data from the directory generated via the spooling acquisition. 
+    Returns a np.array and a dictionary of the meta data. 
 
     Parameters
     ----------
@@ -170,6 +171,11 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         'memmap': returns np.memmap pointing on the disk
         'dask': returns dask.Array that consists of np.memmap
             This requires dask installed into the computer. *Not yet implemented*
+    Returns
+    ----------
+    array: np.ndarray
+        An array read from the directory.
+    metadata: dict
     """
     dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"))
     ini_file = glob.glob(spool_dir + "/*.ini" )
