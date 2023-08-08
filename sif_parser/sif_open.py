@@ -3,8 +3,7 @@ import numpy as np
 from collections import OrderedDict
 from ._sif_open import _open
 from .utils import extract_calibration
-import glob
-import configparser
+import glob, os
 
 
 def np_open(sif_file, ignore_corrupt=False, lazy=None):
@@ -178,6 +177,9 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         An array read from the directory.
     metadata: dict
     """
+    if not os.path.isdir(spool_dir):
+        raise ValueError(f"The path provide '{spool_dir}' to be a valid directory. Check that the directory provided is correct." )
+
     dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"))
     ini_file = glob.glob(spool_dir + "/*.ini" )
     sifx_file = glob.glob(spool_dir + "/*.sifx")
@@ -203,7 +205,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     expected_ini_keys = ['AOIHeight', 'AOIWidth', 'AOIStride', 'PixelEncoding']
     for key in ini_info:
         if key not in expected_ini_keys:
-            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their correct values.")
+            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
 
 # Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
