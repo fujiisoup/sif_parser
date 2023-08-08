@@ -31,7 +31,7 @@ corrupt_filenames = [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
 
 d = THIS_DIR + '/spool_data/'
 spool_file_dirs = []
-for e in [d + '/data_corrupted/', d + '/diff_acq_mode/', d + '/diff_encodings/']:
+for e in [d + '/data_corrupted/', d + '/encodings/']:
     if os.path.exists(e):
         spool_file_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
 
