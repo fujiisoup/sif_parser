@@ -31,11 +31,14 @@ corrupt_filenames = [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
 
 d = THIS_DIR + '/spool_data/'
 spool_file_dirs = []
-for e in [d + '/data_corrupted/', d + '/encodings/']:
+for e in [d + '/data_corrupted/']:
     if os.path.exists(e):
         spool_file_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
 
-# spool_file_dirs = [d + dd for dir in  spool_file_dirs]
+spool_encoding_dirs = []
+for e in [d + '/encodings/']:
+    if os.path.exists(e):
+        spool_encoding_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
 
 
 @pytest.mark.parametrize('filename', filenames)
