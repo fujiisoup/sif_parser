@@ -199,13 +199,13 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     keys, vals = map(list, zip(*[line.strip().split('=', 1) for line in lines if len(line.strip().split('=', 1)) == 2]))
     keys = [i.strip() for i in keys] # need to strip again
     vals = [i.strip() for i in vals] # need to strip again
-    ini_info = OrderedDict(zip(keys, vals)) 
+    ini_info = dict(zip(keys, vals)) 
 
 # Checking for missing or corrupted ini file. File must contain the spected keys.
     expected_ini_keys = ['AOIHeight', 'AOIWidth', 'AOIStride', 'PixelEncoding']
-    for key in ini_info:
-        if key not in expected_ini_keys:
-            raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
+    if not all(key in ini_info for key in expected_ini_keys):
+        raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
+
 
 # Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
