@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 from collections import OrderedDict
 from ._sif_open import _open
-from .utils import extract_calibration
+from .utils import extract_calibration, ordered_dat_files
 import glob, os
 
 
@@ -180,7 +180,7 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     if not os.path.isdir(spool_dir):
         raise ValueError(f"The path provide '{spool_dir}' to be a valid directory. Check that the directory provided is correct." )
 
-    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"))
+    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"), key = ordered_dat_files)
     ini_file = glob.glob(spool_dir + "/*.ini" )
     sifx_file = glob.glob(spool_dir + "/*.sifx")
 
