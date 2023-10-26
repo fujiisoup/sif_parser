@@ -256,22 +256,33 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
             end_padding =  x_ - x
             data = data[:, :, :-end_padding]
     else:
-        def read_uint12(data_chunk):
-            data = np.frombuffer(data_chunk, dtype=np.uint8)
-            fst_uint8, mid_uint8, lst_uint8 = np.reshape(data, (data.shape[0] // 3, 3)).astype(np.uint16).T
-            fst_uint12 = (fst_uint8 << 4) + (mid_uint8 >> 4)
-            snd_uint12 = (lst_uint8 << 4) + (np.bitwise_and(15, mid_uint8))
-            return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
-
-        x, x_, y = int(ini_info['AOIWidth']), int(ini_info['AOIStride']), int(ini_info['AOIHeight'])
-        image_mono12 = []
-        for frame in range(t):
-            with open(dat_files_list[frame], 'rb') as f:
-                dat = f.read()
-            for i in range(y):
-                image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
+        raise TypeError(f"Support for the spooling file of type = '{ini_info['PixelEncoding']}' is currently not fully developed. Please rise an issue to implement this feature.")
+        # return warnings.warn(f"Support for the spooling file of type = '{ini_info['PixelEncoding']}' is currently not fully developed. Please rise an issue to implement this feature.")
         
-        data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
+        ########################################################################
+        ########################################################################
+        # bellosw is the current implementation to read 'Mono12Packed' format that works, 
+        # but pixel values somehow loose precision. 
+        # Please check the test to get more information or feel free to rise an issue.
+        ########################################################################
+        ########################################################################
+        
+        # def read_uint12(data_chunk):
+        #     data = np.frombuffer(data_chunk, dtype=np.uint8)
+        #     fst_uint8, mid_uint8, lst_uint8 = np.reshape(data, (data.shape[0] // 3, 3)).astype(np.uint16).T
+        #     fst_uint12 = (fst_uint8 << 4) + (mid_uint8 >> 4)
+        #     snd_uint12 = (lst_uint8 << 4) + (np.bitwise_and(15, mid_uint8))
+        #     return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
+
+        # x, x_, y = int(ini_info['AOIWidth']), int(ini_info['AOIStride']), int(ini_info['AOIHeight'])
+        # image_mono12 = []
+        # for frame in range(t):
+        #     with open(dat_files_list[frame], 'rb') as f:
+        #         dat = f.read()
+        #     for i in range(y):
+        #         image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
+        
+        # data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
 
 
     return data, info
