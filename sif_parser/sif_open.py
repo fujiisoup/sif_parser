@@ -2,7 +2,8 @@ import warnings
 import numpy as np
 from collections import OrderedDict
 from ._sif_open import _open
-from .utils import extract_calibration
+from .utils import extract_calibration, ordered_dat_files
+import glob, os
 
 
 def np_open(sif_file, ignore_corrupt=False, lazy=None):
@@ -149,4 +150,140 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
 
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
+
+def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
+    """
+    Read the binary files and meta data from the directory generated via the spooling acquisition. 
+    Returns a np.array and a dictionary of the meta data. 
+
+    Parameters
+    ----------
+    spool_dir: 
+        directory path containing the spooling files. 
+        Must contain at least one "sifx_file", one "ini_file" and 
+        one or more "spooled_file(s)":
+        
+    ignore_missing: 
+        True if ignore missing or corrupted *.dat files
+    
+    lazy: either of None | 'memmap' | 'dask'
+        None: load all the data into the memory
+        'memmap': returns np.memmap pointing on the disk
+        'dask': returns dask.Array that consists of np.memmap
+            This requires dask installed into the computer. *Not yet implemented*
+    Returns
+    ----------
+    array: np.ndarray
+        An array read from the directory.
+    metadata: dict
+    """
+    if not os.path.isdir(spool_dir):
+        raise ValueError(f"The path provide '{spool_dir}' to be a valid directory. Check that the directory provided is correct." )
+
+    dat_files_list = sorted(glob.glob(spool_dir + "/*spool.dat"), key = ordered_dat_files)
+    ini_file = glob.glob(spool_dir + "/*.ini" )
+    sifx_file = glob.glob(spool_dir + "/*.sifx")
+
+    if len(dat_files_list) < 1:
+        raise ValueError('Not Binary file(s) with extension {} found in the directory provided {} '.format(
+            "*spool.dat", spool_dir))
+    if len(ini_file) < 1:
+        raise ValueError('Not "ini_file" file with extension {} found in the directory provided {} '.format(
+            "*.ini" , spool_dir))
+    if len(sifx_file) < 1:
+        raise ValueError('Not "sifx_file" file with extension {} found in the directory provided {} '.format(
+            "*.sifx", spool_dir))
+   
+    with open(ini_file[0], "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    keys, vals = map(list, zip(*[line.strip().split('=', 1) for line in lines if len(line.strip().split('=', 1)) == 2]))
+    keys = [i.strip() for i in keys] # need to strip again
+    vals = [i.strip() for i in vals] # need to strip again
+    ini_info = dict(zip(keys, vals)) 
+
+# Checking for missing or corrupted ini file. File must contain the spected keys.
+    expected_ini_keys = ['AOIHeight', 'AOIWidth', 'AOIStride', 'PixelEncoding']
+    if not all(key in ini_info for key in expected_ini_keys):
+        raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
+
+
+# Checking for supported pixel encoding
+    allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
+    if ini_info['PixelEncoding'] not in allowed_encodings:
+        raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
+    
+    # read only metadata (ignoring expected warning on missing data)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        _ , info = np_open(sifx_file[0], ignore_corrupt=True)
+
+    # get the expected shape of the image from metadata
+    x, y = info["DetectorDimensions"]
+    t = info["NumberOfFrames"]
+
+    if len(dat_files_list) != t:
+        if not ignore_missing:
+            raise ValueError('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+        else:
+            warnings.warn('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+            t = len(dat_files_list)
+  
+
+    if ini_info['PixelEncoding'] != allowed_encodings[2]:
+
+        if ini_info['PixelEncoding'] == allowed_encodings[0]:
+            datatype = np.uint16
+            n_bits = 2
+        elif ini_info['PixelEncoding'] == allowed_encodings[1]:        
+            datatype = np.uint32
+            n_bits = 4    
+        # shape of ini file
+        x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])                
+        # create np array with the given info     
+        data = np.empty( [t, y_, x_], datatype ) 
+
+        for frame in range(t):
+            data[frame, ...] = np.fromfile(dat_files_list[frame], 
+            offset=0, 
+            dtype=datatype,
+            count= y_ * x_).reshape(y_, x_)
+        # account for the extra padding to trim if present
+        if x != x_:
+            end_padding =  x_ - x
+            data = data[:, :, :-end_padding]
+    else:
+        raise TypeError(f"Support for the spooling file of type = '{ini_info['PixelEncoding']}' is currently not fully developed. Please rise an issue to implement this feature.")
+        # return warnings.warn(f"Support for the spooling file of type = '{ini_info['PixelEncoding']}' is currently not fully developed. Please rise an issue to implement this feature.")
+        
+        ########################################################################
+        ########################################################################
+        # bellosw is the current implementation to read 'Mono12Packed' format that works, 
+        # but pixel values somehow loose precision. 
+        # Please check the test to get more information or feel free to rise an issue.
+        ########################################################################
+        ########################################################################
+        
+        # def read_uint12(data_chunk):
+        #     data = np.frombuffer(data_chunk, dtype=np.uint8)
+        #     fst_uint8, mid_uint8, lst_uint8 = np.reshape(data, (data.shape[0] // 3, 3)).astype(np.uint16).T
+        #     fst_uint12 = (fst_uint8 << 4) + (mid_uint8 >> 4)
+        #     snd_uint12 = (lst_uint8 << 4) + (np.bitwise_and(15, mid_uint8))
+        #     return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
+
+        # x, x_, y = int(ini_info['AOIWidth']), int(ini_info['AOIStride']), int(ini_info['AOIHeight'])
+        # image_mono12 = []
+        # for frame in range(t):
+        #     with open(dat_files_list[frame], 'rb') as f:
+        #         dat = f.read()
+        #     for i in range(y):
+        #         image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
+        
+        # data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
+
+
+    return data, info
 

@@ -105,7 +105,33 @@ Attributes:
 #### Lazy load
 Lazy load is also possible for `xr_open`. To do so, just pass either `lazy='memmap'` or `lazy='dask'`.
 
+### `sif_parser.np_spool_open('/path/to/spool_files')`:
 
+Read from a directory the binary files and metadata generated via spooling and return a np.array. 
+Spooling acquisition save your data directly on disk when reading from your camera. When spooling acquisition is enabled, a directory is created in your PC and the data is written directly on the hard disk as it is being acquired  (see the Andor SDK Manual for more details).
+
+Spooling acquisition normally generates the following files by default and must be present in the directory:
+- 1 file with the extension `*.sifx`. This is the header of the file containing the metadata. You could also read it by using the method `sif_parser.np_open('/path/to/my_file.sifx', ignore_corrupt=True)`.
+- 1 file with the extension `*.ini`. This file contains information on the image format such as number of pixels by row (AOIWidth) number of rows and (AOIHeight),and padding bytes (AOIStride), pixel encoding, etc. (See the Andor SDK manual for more details).
+- 1 or set of files with the extension `*spool.dat` containing the actual image data as binary files.
+
+```python
+>>> data, info = sif_parser.np_spool_open('/path/to/spool_files')
+
+>>> data
+array([[[2873, 2861, 2876, ..., 4016, 4185, 4086],
+         [2846, 2730, 2915, ..., 4101, 4136, 4290],
+         ...,
+         [8269, 8247, 8554, ..., 4177, 3988, 4072],
+         [8332, 8224, 9474, ..., 4112, 4056, 4124]]], 
+      dtype=uint32),
+>>> info
+OrderedDict([('SifVersion', 65567),
+              ('ExperimentTime', 1688045153),
+              ('DetectorTemperature', 0.0),
+              ...
+            ])
+```
 ## Utils
 
 ### `sif_parser.utils.extract_calibration`

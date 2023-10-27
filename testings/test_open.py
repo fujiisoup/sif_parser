@@ -1,5 +1,7 @@
 import os
 import sys
+import glob
+import codecs
 THIS_DIR = os.path.dirname(__file__)
 sys.path.append(THIS_DIR + '/../sif_parser/')
 
@@ -15,6 +17,7 @@ import unittest
 import sif_parser
 from sif_parser import utils
 import _sif_open
+import warnings
 
 
 filenames = []
@@ -27,6 +30,17 @@ for d in [DATA_DIR, PUBLIC_DATA_DIR]:
 d = THIS_DIR + '/corrupt_data/'
 files = os.listdir(d)
 corrupt_filenames = [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
+
+d = THIS_DIR + '/spool_data/'
+spool_file_dirs = []
+for e in [d + '/data_corrupted/']:
+    if os.path.exists(e):
+        spool_file_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
+
+spool_encoding_dirs = []
+for e in [d + '/encodings/']:
+    if os.path.exists(e):
+        spool_encoding_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
 
 
 @pytest.mark.parametrize('filename', filenames)
@@ -199,6 +213,68 @@ try:
 
 except ImportError:
     pass
+
+@pytest.mark.parametrize('spool_dir', spool_file_dirs)
+def test_np_spool_open(spool_dir):
+    """
+    This test that the method "sif_parser.np_spool_open" is functional with 
+    missing or incomplete data.
+
+    """
+    with pytest.raises(ValueError) as e_info:
+        data, info = sif_parser.np_spool_open(spool_dir, ignore_missing=False)
+    
+    with pytest.raises(ValueError) as e_info:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            data, info = sif_parser.np_spool_open(spool_dir, ignore_missing=True)
+            if data.shape != info["DetectorDimensions"]:
+                raise ValueError()
+
+@pytest.mark.parametrize('spool_dir', spool_encoding_dirs)
+def test_np_spool_encoding(spool_dir):
+    """
+    This test that the data returned using the method "sif_parser.np_spool_open"
+    is equal to that of the original data generated from the Andor Solis Software
+    for the different encodings accepted [Mono32, 'Mono16', 'Mono12Packed'].
+
+    """
+    # get bit info from ini file
+    ini_file = glob.glob(spool_dir + "/*.ini" )
+    with open(ini_file[0], "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    keys, vals = map(list, zip(*[line.strip().split('=', 1) for line in lines if len(line.strip().split('=', 1)) == 2]))
+    keys = [i.strip() for i in keys] # need to strip again
+    vals = [i.strip() for i in vals] # need to strip again
+    ini_info = dict(zip(keys, vals))
+    
+    #load data using the sif_parser
+    sifparser_data, info = sif_parser.np_spool_open(spool_dir)
+    sifparser_data = np.swapaxes(sifparser_data, 1, 2)
+    
+    # load text data generated from the Solis software (ground truth data)
+    text_list_files = sorted(glob.glob(spool_dir + "**/*.asc"))
+    y_, x_ =  info["size"]
+    t = len(text_list_files)
+    
+    
+    if ini_info["PixelEncoding"] in ['Mono16', 'Mono12Packed']:
+        datatype = np.uint16
+    elif ini_info["PixelEncoding"] == 'Mono32':
+        datatype = np.uint32
+
+    data = np.empty( [t, y_, x_], datatype) 
+
+
+    for frame in range(t):
+        with codecs.open(text_list_files[frame], encoding="utf-8") as f:
+            text_AndorSolis_data = np.loadtxt(f, max_rows=y_).astype(datatype)
+            
+        data[frame, ...] = text_AndorSolis_data[:, 1:] # remove firs row since show index info no data
+    
+    assert np.allclose(sifparser_data, data)
+
+
 
 
 if __name__ == '__main__':
