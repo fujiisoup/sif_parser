@@ -133,12 +133,14 @@ def test_convert_files_verbose(caplog):
     # check first message displays all files
     # first message should be "Matched [<paths>]"
     for p in paths:
-        assert p in messages[0]
+        p = p.replace('\\', '/')
+        assert p in ''.join(messages[0]).replace('\\\\', '\\').replace('\\', '/')
 
     # check each path has a converted message
     conv_msgs = map(lambda p: f'Converting {p}', paths[1:])
     for m in conv_msgs:
-        assert m in messages[1:]
+        m = m.replace('\\', '/')
+        assert m in ''.join(messages[1:]).replace('\\\\', '\\').replace('\\', '/')
 
 
 def test_get_new_join_fn():

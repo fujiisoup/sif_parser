@@ -38,3 +38,6 @@ testings/unused_examples
 
 # temporary files
 testings/public_testdata/cli/output/*
+
+# vscode
+*.code-workspace
