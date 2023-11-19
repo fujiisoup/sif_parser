@@ -177,10 +177,10 @@ sif_parser --join *pl.sif
 
 ## Use as a plugin for PIL
 
-**NOTE!!  The current version does not work as a plugin, maybe due to updates in PIL. Contributions are very welcome.**
+**NOTE!!  This feature was removed.**
 See the issue [#7](https://github.com/fujiisoup/sif_reader/issues/7)
 
-We also provide a plugin for PIL,
+Previously, we have provided a plugin for PIL,
 
 ```python
 from PIL import image
@@ -188,11 +188,6 @@ import sif_parser.plugin
 
 I = Image.open('/path/to/file.sif')
 ```
-
-Note that, however, it does not work for multiple-image files.
-Contribution is very welcome!
-The image mode is `'F'`, 32-bit floating-point greyscale.
-
 
 ## History
 
