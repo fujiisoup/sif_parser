@@ -12,7 +12,7 @@ def _to_string(c):
     ''' convert bytes to string. c: string or bytes'''
     return c if not isinstance(c, bytes) else c.decode('utf-8')
 
-def _read_string(fp, length = None):
+def _read_string(fp, length=None, delimiter='\n'):
     '''Read a string of the given length. If no length is provided, the
     length is read from the file.'''
     if length is None:
@@ -121,7 +121,7 @@ def _open(fp):
     elif info['SifVersion'] == 65558:
         for _ in range(5):
             fp.readline()
-    elif info['SifVersion'] == 65559:
+    elif info['SifVersion'] in [65559, 65564]:
         for _ in range(8):
             fp.readline() # Skip to Line 18
         info['spectrograph'] = _to_string(fp.readline().split()[1])
@@ -165,7 +165,7 @@ def _open(fp):
 
     fp.readline() # 13 newline or 6.5
     fp.readline() # 13 newline or 6.5
-
+    
     info['FrameAxis'] = _read_string(fp) # Line 26 or 39
     info['DataType'] = _read_string(fp)
     info['ImageAxis'] = _read_string(fp)    
