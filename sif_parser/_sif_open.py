@@ -12,7 +12,7 @@ def _to_string(c):
     ''' convert bytes to string. c: string or bytes'''
     return c if not isinstance(c, bytes) else c.decode('utf-8')
 
-def _read_string(fp, length=None, delimiter='\n'):
+def _read_string(fp, length=None):
     '''Read a string of the given length. If no length is provided, the
     length is read from the file.'''
     if length is None:
