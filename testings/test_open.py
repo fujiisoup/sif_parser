@@ -42,6 +42,12 @@ for e in [d + '/encodings/']:
     if os.path.exists(e):
         spool_encoding_dirs += sorted([e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower)
 
+def test_issue27():
+    filename = THIS_DIR + '/issue27/test.sif'
+    with open(filename, 'rb') as f:
+        data, info = sif_parser.np_open(f)
+    assert np.sum(np.isnan(data)) == 0
+
 
 @pytest.mark.parametrize('filename', filenames)
 def test_open(filename):
