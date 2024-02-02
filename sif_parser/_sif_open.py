@@ -30,6 +30,16 @@ def _read_until(fp, terminator=' '):
         word += c
     return word
 
+def _skip_spaces(fp):
+    '''Read until something other than space or line end '''
+    while True:
+        offset = fp.tell()
+        c = _to_string(fp.read(1))
+        if c not in [' ', '\n']:
+            fp.seek(offset)
+            return fp
+    raise ValueError('Reached the end of the file')
+
 def _read_int(fp):
     return int(_read_until(fp, ' '))
 
@@ -199,10 +209,11 @@ def _open(fp):
     tile = []
     info['xbin'] = xbin
     info['ybin'] = ybin
-
+    
+    fp = _skip_spaces(fp)
     for f in range(no_images):
         info['timestamp_of_{0:d}'.format(f)] = int(fp.readline())
-
+    
     offset = fp.tell()
     try: # remove extra 0 if it exits.
         flag = int(fp.readline())

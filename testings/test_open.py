@@ -8,6 +8,7 @@ sys.path.append(THIS_DIR + '/../sif_parser/')
 # data directories that will be tested
 DATA_DIR = THIS_DIR + '/sif_parser_testdata/'
 PUBLIC_DATA_DIR = THIS_DIR + '/public_testdata/'
+EXTRA_DATA_DIR = THIS_DIR + '/extra_data/'
 
 import PIL.Image
 import numpy as np
@@ -21,7 +22,7 @@ import warnings
 
 
 filenames = []
-for d in [DATA_DIR, PUBLIC_DATA_DIR]:
+for d in [DATA_DIR, PUBLIC_DATA_DIR, EXTRA_DATA_DIR]:
     if os.path.exists(d):
         files = os.listdir(d)
         filenames += [d + f for f in files if f[-4:] in ['.sif', '.SIF']]
