@@ -110,15 +110,23 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
         'memmap': returns np.memmap pointing on the disk
         'dask': returns dask.Array that consists of np.memmap
             This requires dask installed into the computer.
+
+    Returns
+    -------
+    dataarray: xr.DataArray
+        with attributes and coordinates from the metadata
     """
+    data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt, lazy=lazy)
+    return _to_xarray(data, info)
+
+
+def _to_xarray(data, info):
     try:
         import xarray as xr
     except ImportError:
         raise ImportError(
             "xarray needs to be installed to use xr_open."
         )
-
-    data, info = np_open(sif_file, ignore_corrupt=ignore_corrupt, lazy=lazy)
     # make Variable first to avoid converting to np.array
     data = xr.core.variable.Variable(['Time', 'height', 'width'], data, fastpath=True)
     
@@ -146,10 +154,10 @@ def xr_open(sif_file, ignore_corrupt=False, lazy=None):
             # remove time stamps from attrs
             if type(new_info[key]) == bytes:
                 new_info[key] = new_info[key].decode('utf-8')
-    
 
     return xr.DataArray(data, dims=['Time', 'height', 'width'],
                         coords=coords, attrs=new_info)
+
 
 def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     """
@@ -201,13 +209,13 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     vals = [i.strip() for i in vals] # need to strip again
     ini_info = dict(zip(keys, vals)) 
 
-# Checking for missing or corrupted ini file. File must contain the spected keys.
+    # Checking for missing or corrupted ini file. File must contain the spected keys.
     expected_ini_keys = ['AOIHeight', 'AOIWidth', 'AOIStride', 'PixelEncoding']
     if not all(key in ini_info for key in expected_ini_keys):
         raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
 
 
-# Checking for supported pixel encoding
+    # Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
     if ini_info['PixelEncoding'] not in allowed_encodings:
         raise ValueError(f"Unknown pixel encoding found with value: '{ini_info['PixelEncoding']}. Allowed pixel encodings are: {allowed_encodings}.'")
@@ -283,7 +291,33 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         #         image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
         
         # data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
-
-
     return data, info
 
+def xr_spool_open(spool_dir, ignore_missing=False, lazy=None):
+    """
+    Read the binary files and meta data from the directory generated via the spooling acquisition. 
+    Returns a np.array and a dictionary of the meta data. 
+
+    Parameters
+    ----------
+    spool_dir: 
+        directory path containing the spooling files. 
+        Must contain at least one "sifx_file", one "ini_file" and 
+        one or more "spooled_file(s)":
+        
+    ignore_missing: 
+        True if ignore missing or corrupted *.dat files
+    
+    lazy: either of None | 'memmap' | 'dask'
+        None: load all the data into the memory
+        'memmap': returns np.memmap pointing on the disk
+        'dask': returns dask.Array that consists of np.memmap
+            This requires dask installed into the computer. *Not yet implemented*
+
+    Returns
+    -------
+    dataarray: xr.DataArray
+        with attributes and coordinates from the metadata
+    """
+    data, info = np_spool_open(spool_dir, ignore_missing, lazy)
+    return _to_xarray(data, info)
