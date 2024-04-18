@@ -284,6 +284,11 @@ def test_np_spool_encoding(spool_dir):
     sif_parser.xr_spool_open(spool_dir)
 
 
+def test_xr_spool_open_long():
+    spool_dir = './spool_data/spool_very_long/'
+    data = sif_parser.xr_spool_open(spool_dir)
+    assert np.all(np.diff(data['Time'].values) > 0)
+
 
 if __name__ == '__main__':
      unittest.main()

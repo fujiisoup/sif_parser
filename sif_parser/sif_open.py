@@ -134,8 +134,16 @@ def _to_xarray(data, info):
     coords = OrderedDict()
     # extract time stamps
     time = np.ndarray(len(data), dtype=float)
+    
+    count = 0
+    time_prev = -1
     for f in range(len(data)):
-        time[f] = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
+        # for a very long experiment, the following can overflow in converting to floats
+        time_current = info['timestamp_of_{0:d}'.format(f)] * 1.0e-6  # unit [s]
+        if time_current < time_prev:
+            count += 1
+        time_prev = time_current
+        time[f] = time_current + count * (2.0**32 * 1e-6)
     coords['Time'] = (('Time', ), time, {'Unit': 's'})
 
     # calibration data
@@ -214,7 +222,6 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     if not all(key in ini_info for key in expected_ini_keys):
         raise ValueError(f"Problem handeling the 'ini' file. Probably the file is corrupted or keys are missing. Check that your 'ini' file contains the keys: {expected_ini_keys}, and their corresponding values.")
 
-
     # Checking for supported pixel encoding
     allowed_encodings = ['Mono16', 'Mono32', 'Mono12Packed']
     if ini_info['PixelEncoding'] not in allowed_encodings:
@@ -229,18 +236,6 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
     x, y = info["DetectorDimensions"]
     t = info["NumberOfFrames"]
 
-    if len(dat_files_list) != t:
-        if not ignore_missing:
-            raise ValueError('The spooling acquisition might be corrupt. Number of files should be {} '
-                        'according to the header, but only {} binary files were found in the directory.'.format(
-                            t, len(dat_files_list)))
-        else:
-            warnings.warn('The spooling acquisition might be corrupt. Number of files should be {} '
-                        'according to the header, but only {} binary files were found in the directory.'.format(
-                            t, len(dat_files_list)))
-            t = len(dat_files_list)
-  
-
     if ini_info['PixelEncoding'] != allowed_encodings[2]:
 
         if ini_info['PixelEncoding'] == allowed_encodings[0]:
@@ -249,16 +244,20 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         elif ini_info['PixelEncoding'] == allowed_encodings[1]:        
             datatype = np.uint32
             n_bits = 4    
-        # shape of ini file
-        x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])                
+        # shape found from ini file
+        x_, y_ =  int( int(ini_info['AOIStride']) / n_bits ), int(ini_info['AOIHeight'])
+        image_size = int(ini_info['ImageSizeBytes']) // n_bits
+        # possible frame number
+        t_size = np.fromfile(dat_files_list[0], offset=0, dtype=datatype).size // (image_size)
+        size = t_size * image_size
         # create np array with the given info     
-        data = np.empty( [t, y_, x_], datatype ) 
+        data = np.concatenate([
+            np.fromfile(
+                f, offset=0, dtype=datatype
+            )[:size].reshape(t_size, image_size)[:, :x_ * y_].reshape(t_size, y_, x_)
+            for f in dat_files_list
+        ], axis=0)
 
-        for frame in range(t):
-            data[frame, ...] = np.fromfile(dat_files_list[frame], 
-            offset=0, 
-            dtype=datatype,
-            count= y_ * x_).reshape(y_, x_)
         # account for the extra padding to trim if present
         if x != x_:
             end_padding =  x_ - x
@@ -291,6 +290,18 @@ def np_spool_open(spool_dir, ignore_missing=False, lazy=None):
         #         image_mono12.append(read_uint12(dat[x_ * i: x_ * i + x * 3 // 2 ]))
         
         # data = np.stack(image_mono12, axis = 0).reshape((t, y, x))  
+
+    if len(data) != t:
+        if not ignore_missing:
+            raise ValueError('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+        else:
+            warnings.warn('The spooling acquisition might be corrupt. Number of files should be {} '
+                        'according to the header, but only {} binary files were found in the directory.'.format(
+                            t, len(dat_files_list)))
+            data = data[:t]
+
     return data, info
 
 def xr_spool_open(spool_dir, ignore_missing=False, lazy=None):
