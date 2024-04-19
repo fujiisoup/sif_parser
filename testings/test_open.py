@@ -272,7 +272,6 @@ def test_np_spool_encoding(spool_dir):
 
     data = np.empty( [t, y_, x_], datatype) 
 
-
     for frame in range(t):
         with codecs.open(text_list_files[frame], encoding="utf-8") as f:
             text_AndorSolis_data = np.loadtxt(f, max_rows=y_).astype(datatype)
@@ -281,7 +280,14 @@ def test_np_spool_encoding(spool_dir):
     
     assert np.allclose(sifparser_data, data)
 
+    # should be no error
+    sif_parser.xr_spool_open(spool_dir)
 
+
+def test_xr_spool_open_long():
+    spool_dir = THIS_DIR + '/spool_data/data_corrupted/spool_very_long/'
+    data = sif_parser.xr_spool_open(spool_dir, ignore_missing=True)
+    assert np.all(np.diff(data['Time'].values) > 0)
 
 
 if __name__ == '__main__':
