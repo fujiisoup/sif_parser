@@ -285,8 +285,8 @@ def test_np_spool_encoding(spool_dir):
 
 
 def test_xr_spool_open_long():
-    spool_dir = './spool_data/spool_very_long/'
-    data = sif_parser.xr_spool_open(spool_dir)
+    spool_dir = THIS_DIR + '/spool_data/data_corrupted/spool_very_long/'
+    data = sif_parser.xr_spool_open(spool_dir, ignore_missing=True)
     assert np.all(np.diff(data['Time'].values) > 0)
 
 
