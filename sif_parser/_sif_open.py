@@ -103,6 +103,13 @@ def _open(fp):
     _read_until(fp, ' ') # 1
     info['GainDAC'] = _read_float(fp)
 
+    _read_until(fp, ' ') # 0
+    _read_until(fp, ' ') # 0
+    info['GateWidth'] = _read_float(fp)
+
+    _read_string(fp, 37) # blanks
+    info['GratingBlaze'] = _read_float(fp)
+
     # What is the rest of the line?
     _read_until(fp, '\n')
     
