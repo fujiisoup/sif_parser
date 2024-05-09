@@ -103,11 +103,19 @@ def _open(fp):
     _read_until(fp, ' ') # 1
     info['GainDAC'] = _read_float(fp)
 
+    _read_until(fp, ' ') # 0
+    _read_until(fp, ' ') # 0
+    info['GateWidth'] = _read_float(fp)
+
+    for _ in range(16):
+        _read_until(fp, ' ')
+    info['GratingBlaze'] = _read_float(fp)
+
     # What is the rest of the line?
     _read_until(fp, '\n')
     
     # Line 4 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    info['DetectorType'] = _to_string(fp.readline())
+    info['DetectorType'] = _to_string(fp.readline()).strip()
     # Line 5 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     info['DetectorDimensions'] = (_read_int(fp), _read_int(fp))
     # Lines 5 -> 6    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
