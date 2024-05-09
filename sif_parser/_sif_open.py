@@ -115,7 +115,7 @@ def _open(fp):
     _read_until(fp, '\n')
     
     # Line 4 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    info['DetectorType'] = _to_string(fp.readline())
+    info['DetectorType'] = _to_string(fp.readline()).strip()
     # Line 5 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     info['DetectorDimensions'] = (_read_int(fp), _read_int(fp))
     # Lines 5 -> 6    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

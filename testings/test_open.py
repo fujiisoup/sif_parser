@@ -76,7 +76,7 @@ def test_issue33():
     assert info["DetectorType"] == "DH334T-18F-63"
     assert info["GateWidth"] == 10e-9
     assert info["ShutterTime"] == (0.027, 0.0)
-    assert info["spectrograph"] == 999
+    assert info["spectrograph"] == '999'
     assert info["SifCalbVersion"] == 65540
     assert info["Calibration_data"] == [
         529.93812442523,
