@@ -67,6 +67,10 @@ def test_gatewidth(filename, gate_width, gate_delay, gain):
     assert np.allclose(info["GateGain"], gain)
     assert np.allclose(info["GainDAC"], gain)
 
+        spool_encoding_dirs += sorted(
+            [e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower
+        )
+
 
 def test_issue27():
     filename = THIS_DIR + "/issue27/test.sif"
