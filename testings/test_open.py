@@ -49,6 +49,25 @@ for e in [d + "/encodings/"]:
         )
 
 
+@pytest.mark.parametrize(
+    ("filename", "gate_width", "gate_delay", "gain"),
+    [
+        (THIS_DIR + "/issue37/shot25-Ar-delay 480us-width 2us-gain 3900.sif", 2000, 480000, 4095),
+        (THIS_DIR + "/issue37/shot34-Ar-delay 470us-width 2us-gain 4095.sif", 2000, 470000, 4095),
+    ],
+)
+def test_gatewidth(filename, gate_width, gate_delay, gain):
+    # issue 33
+    data, info = sif_parser.np_open(filename)
+    assert "GateWidth" in info
+    assert "GateDelay" in info
+    assert "GateGain" in info
+    assert np.allclose(info["GateWidth"], gate_width * 1e-9)
+    assert np.allclose(info["GateDelay"], gate_delay * 1e-9)
+    assert np.allclose(info["GateGain"], gain)
+    assert np.allclose(info["GainDAC"], gain)
+
+
 def test_issue27():
     filename = THIS_DIR + "/issue27/test.sif"
     with open(filename, "rb") as f:

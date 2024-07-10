@@ -151,7 +151,15 @@ def _open(fp):
         for _ in range(8):
             fp.readline() # Skip to Line 22
         info['spectrograph'] = _to_string(fp.readline().split()[1])
-        for _ in range(9):
+        # intensifier info, such as gate, gain
+        fp.readline()
+        for _ in range(3):
+            _read_float(fp)
+        info['GateGain'] = _read_float(fp)
+        _read_float(fp); _read_float(fp); 
+        info['GateDelay'] = _read_float(fp) * 1e-12  # make it in seconds
+        info['GateWidth'] = _read_float(fp) * 1e-12  # make it in seconds
+        for _ in range(8):
             fp.readline() # skipping bunch of lines from 20 to 37 
     
     if 'spectrograph' not in info.keys():
