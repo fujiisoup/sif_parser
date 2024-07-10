@@ -48,7 +48,7 @@ for e in [d + "/encodings/"]:
             [e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower
         )
 
-
+        
 @pytest.mark.parametrize(
     ("filename", "gate_width", "gate_delay", "gain"),
     [
@@ -67,7 +67,7 @@ def test_gatewidth(filename, gate_width, gate_delay, gain):
     assert np.allclose(info["GateGain"], gain)
     assert np.allclose(info["GainDAC"], gain)
 
-
+    
 def test_issue27():
     filename = THIS_DIR + "/issue27/test.sif"
     with open(filename, "rb") as f:
