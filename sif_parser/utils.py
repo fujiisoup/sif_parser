@@ -24,6 +24,8 @@ def extract_calibration(info):
         None if no calibration is found
     """
     width = info['DetectorDimensions'][0]
+    if 'ImageLength' in info:
+        width = info['ImageLength'] 
     # multiple calibration data is stored
     if 'Calibration_data_for_frame_1' in info:
         calibration = np.ndarray((info['NumberOfFrames'], width))
