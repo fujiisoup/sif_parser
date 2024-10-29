@@ -48,7 +48,21 @@ for e in [d + "/encodings/"]:
             [e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower
         )
 
-        
+
+def test_step_and_glue():
+    filename = THIS_DIR + "/step_and_glue/step_and_glue.sif"
+    with open(filename, "rb") as f:
+        data, info = sif_parser.np_open(f)
+    wl = sif_parser.utils.extract_calibration(info)
+
+    expected_wl, expected_data = np.loadtxt(filename[:-3] + 'asc', skiprows=38).T
+    assert np.allclose(wl, expected_wl)
+
+    # xr_open
+    data = sif_parser.xr_open(filename)
+    assert np.allclose(data['calibration'], expected_wl)
+
+
 @pytest.mark.parametrize(
     ("filename", "gate_width", "gate_delay", "gain"),
     [
