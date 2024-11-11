@@ -76,6 +76,8 @@ def np_open(sif_file, ignore_corrupt=False, lazy=None):
         except ValueError:
             data = data[:i]
             if not ignore_corrupt:
+                if will_close:
+                    f.close()
                 raise ValueError(
                     'The file might be corrupt. Number of files should be {} '
                     'according to the header, but only {} is found in the file.'
