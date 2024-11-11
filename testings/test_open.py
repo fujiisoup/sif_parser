@@ -54,16 +54,11 @@ for e in [d + "/encodings/"]:
 def assert_file_not_in_use(filename):
     platform = sys.platform
     if platform == "linux":
-        from subprocess import check_output,Popen, PIPE
-
-        lsout = Popen(['lsof',filename],stdout=PIPE, shell=False)
-        check_output(["grep",filename], stdin=lsout.stdout, shell=False)
-
         for proc in psutil.process_iter():
             try:
                 for item in proc.open_files():
                     if filename == item.path:
-                        return True
+                        raise Exception("File is in use.")
             except Exception:
                 pass
         raise Exception("File is in use.")
@@ -74,7 +69,6 @@ def assert_file_not_in_use(filename):
         os.rename(filename, filename)
     else:
         raise Exception("OS not supported")
-
 
 
 def test_step_and_glue():
