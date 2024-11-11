@@ -2,6 +2,8 @@ import os
 import sys
 import glob
 import codecs
+import psutil
+
 
 THIS_DIR = os.path.dirname(__file__)
 sys.path.append(THIS_DIR + "/../sif_parser/")
@@ -47,6 +49,30 @@ for e in [d + "/encodings/"]:
         spool_encoding_dirs += sorted(
             [e + dd for dd in os.listdir(e) if not dd.startswith(".DS")], key=str.lower
         )
+
+
+def is_file_not_in_use(filename):
+    platform = sys.platform
+    if platform == "linux":
+        for proc in psutil.process_iter():
+            try:
+                for item in proc.open_files():
+                    if filename == item.path:
+                        return False
+            except Exception:
+                pass
+        return True
+    elif platform == "darwin":
+        raise NotImplementedError('Testing in Mac is not supported.')
+    elif platform == "win32":
+        # for windows:
+        try:
+            os.rename(filename, filename)
+        except Exception:
+            return False
+        return True
+    else:
+        raise Exception("OS not supported")
 
 
 def test_step_and_glue():
@@ -190,6 +216,9 @@ def test_one_image():
 def test_corrupt_file(filename):
     with pytest.raises(ValueError) as e_info:
         data, info = sif_parser.np_open(filename)
+
+    # try open with a write mode to make sure the file is closed
+    assert is_file_not_in_use(filename)
 
     with pytest.warns(UserWarning, match="corrupt."):
         data, info = sif_parser.np_open(filename, ignore_corrupt=True)
