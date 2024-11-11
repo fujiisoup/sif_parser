@@ -54,19 +54,14 @@ for e in [d + "/encodings/"]:
 def assert_file_not_in_use(filename):
     platform = sys.platform
     if platform == "linux":
-        widlcard = "/proc/*/fd/*"
-        lfds = glob.glob(widlcard)
-        for fds in lfds:
+        for proc in psutil.process_iter():
             try:
-                file = os.readlink(fds)
-                if file == filename:
-                    return True
-            except OSError as err:
-                if err.errno == 2:     
-                    file = None
-                else:
-                    raise(err)
-        raise ValueError("file is in use.")
+                for item in proc.open_files():
+                    if filename == item.path:
+                        return True
+            except Exception:
+                pass
+        raise Exception("File is in use.")
     elif platform == "darwin":
         raise NotImplementedError('Testing in Mac is not supported.')
     elif platform == "win32":
