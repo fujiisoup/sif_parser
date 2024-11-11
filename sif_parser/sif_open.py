@@ -28,8 +28,12 @@ def np_open(sif_file, ignore_corrupt=False, lazy=None):
         tile, size, no_images, info = _open(f)
     except AttributeError:
         f = open(sif_file,'rb')
-        tile, size, no_images, info = _open(f)
         will_close = True
+        try:
+            tile, size, no_images, info = _open(f)
+        except SyntaxError as e:
+            f.close()
+            raise e
 
     # allocate np.array
     if lazy == 'dask':

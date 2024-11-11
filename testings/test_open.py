@@ -51,22 +51,26 @@ for e in [d + "/encodings/"]:
         )
 
 
-def assert_file_not_in_use(filename):
+def is_file_not_in_use(filename):
     platform = sys.platform
     if platform == "linux":
         for proc in psutil.process_iter():
             try:
                 for item in proc.open_files():
                     if filename == item.path:
-                        raise Exception("File is in use.")
+                        return False
             except Exception:
                 pass
-        raise Exception("File is in use.")
+        return True
     elif platform == "darwin":
         raise NotImplementedError('Testing in Mac is not supported.')
     elif platform == "win32":
         # for windows:
-        os.rename(filename, filename)
+        try:
+            os.rename(filename, filename)
+        except Exception:
+            return False
+        return True
     else:
         raise Exception("OS not supported")
 
@@ -214,7 +218,7 @@ def test_corrupt_file(filename):
         data, info = sif_parser.np_open(filename)
 
     # try open with a write mode to make sure the file is closed
-    assert_file_not_in_use(filename)
+    assert is_file_not_in_use(filename)
 
     with pytest.warns(UserWarning, match="corrupt."):
         data, info = sif_parser.np_open(filename, ignore_corrupt=True)
