@@ -35,8 +35,6 @@ d = THIS_DIR + "/corrupt_data/"
 files = os.listdir(d)
 corrupt_filenames = [d + f for f in files if f[-4:] in [".sif", ".SIF"]]
 
-corrupt_filenames2 = [THIS_DIR + '/corrupt_data2/tmp.sif']
-
 d = THIS_DIR + "/spool_data/"
 spool_file_dirs = []
 for e in [d + "/data_corrupted/"]:
@@ -53,26 +51,27 @@ for e in [d + "/encodings/"]:
         )
 
 
-def is_file_not_in_use(filename):
+def assert_file_not_in_use(filename):
     platform = sys.platform
     if platform == "linux":
-        for proc in psutil.process_iter():
+        widlcard = "/proc/*/fd/*"
+        lfds = glob.glob(widlcard)
+        for fds in lfds:
             try:
-                for item in proc.open_files():
-                    if filename == item.path:
-                        return False
-            except Exception:
-                pass
-        return True
+                file = os.readlink(fds)
+                if file == filename:
+                    return True
+            except OSError as err:
+                if err.errno == 2:     
+                    file = None
+                else:
+                    raise(err)
+        raise ValueError("file is in use.")
     elif platform == "darwin":
         raise NotImplementedError('Testing in Mac is not supported.')
     elif platform == "win32":
         # for windows:
-        try:
-            os.rename(filename, filename)
-        except Exception:
-            return False
-        return True
+        os.rename(filename, filename)
     else:
         raise Exception("OS not supported")
 
@@ -220,11 +219,7 @@ def test_corrupt_file(filename):
         data, info = sif_parser.np_open(filename)
 
     # try open with a write mode to make sure the file is closed
-    try:
-        data, info = sif_parser.np_open(filename)
-    except ValueError:
-        with open(filename, 'a') as f:
-            assert f.writable()
+    assert_file_not_in_use(filename)
 
     with pytest.warns(UserWarning, match="corrupt."):
         data, info = sif_parser.np_open(filename, ignore_corrupt=True)
@@ -234,16 +229,6 @@ def test_corrupt_file(filename):
 
     with pytest.warns(UserWarning, match="corrupt."):
         data = sif_parser.xr_open(filename, ignore_corrupt=True)
-
-
-@pytest.mark.parametrize("filename", corrupt_filenames2)
-def test_corrupt_file2(filename):
-    # try open with a write mode to make sure the file is closed
-    try:
-        data, info = sif_parser.np_open(filename)
-    except (ValueError, SyntaxError):
-        with open(filename, 'a') as f:
-            assert f.writable()
 
 
 @pytest.mark.parametrize(
