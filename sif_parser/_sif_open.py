@@ -179,7 +179,9 @@ def _open(fp):
     else:
         info['Calibration_data'] = fp.readline()
 
-    fp.readline() # 0 1 0 0 newline
+    # calibration data for older Andor sif file
+    info['Calibration_data_old'] = fp.readline() # 0 1 0 0 newline
+
     fp.readline() # 0 1 0 0 newline
     raman = fp.readline()
     try: 
@@ -283,4 +285,13 @@ def extract_user_text(info):
         except ValueError:
             del info['Calibration_data']
     del info['user_text']
+
+    if 'Calibration_data' not in info:
+        coefs = info['Calibration_data_old'].strip().split()
+        try:
+            info['Calibration_data'] = [float(c) for c in coefs]
+        except ValueError:
+            pass
+    del info['Calibration_data_old']
+
     return info
