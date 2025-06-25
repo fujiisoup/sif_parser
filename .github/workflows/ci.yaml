@@ -62,7 +62,7 @@ jobs:
           python -m pytest
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Test results for ${{ runner.os }}-${{ matrix.python-version }}
           path: pytest.xml
