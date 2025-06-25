@@ -1,0 +1,31 @@
+Filename:                     boron_0.05_1us_750ns_5.sif
+Date and Time:                Sun May 2 23:43:15.000 2010
+Software Version:             Unknown
+Temperature (C):              -20
+Model:                        DH734_18mm
+Data Type:                    Counts
+Acquisition Mode:             Single Scan
+Trigger Mode:                 External
+Exposure Time (secs):         0.011
+Readout Mode:                 Full Vertical Binning
+Horizontal binning:           1
+Shutter Mode:                 Fully AUTO
+TTL level:                    Low
+Time to open:                 0 ms
+Time to close:                0 ms
+Extended Data Range:          off
+Horizontally flipped:         false
+Vertical Shift Speed (usecs): 16
+Pixel Readout Rate (MHz):     1
+Intelligate:                  off
+Insertion delay:              normal
+Gain level:                   180
+Integrate on chip:            off
+Gate Mode:                    
+Gate Width (nsecs):           750
+Gate Delay (nsecs):           1000
+Spurious Noise Filter Mode:   No Filter
+Photon counted:               false
+Data Averaging Filter Mode:   No Filter
+
+

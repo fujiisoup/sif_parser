@@ -412,5 +412,18 @@ def test_xr_spool_open_long():
     assert np.all(np.diff(data["Time"].values) > 0)
 
 
+def test_echelle():
+    filename = THIS_DIR + "/echelle/boron_0.05_1us_750ns_5.sif"
+    with open(filename, "rb") as f:
+        data, info = sif_parser.np_open(f)
+
+    actual = sif_parser.utils.extract_calibration(info)
+
+    exported_filename =  THIS_DIR + "/echelle/boron_0.asc"
+    expected_x, expected = np.loadtxt(exported_filename, delimiter='\t').T
+    assert np.allclose(actual, expected_x)
+    assert np.allclose(data, expected)
+    
+
 if __name__ == "__main__":
     unittest.main()
